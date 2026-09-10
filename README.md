@@ -6,16 +6,18 @@ Sistema de avaliação organizacional tipo "pulso" para a SEPAL (organização m
 
 Organizações grandes precisam de feedback constante sobre como áreas, eventos e lideranças estão funcionando, mas modelos tradicionais de avaliação 360 são lentos e cansam quem participa. O Avalie360 resolve isso com ciclos curtos ("pulsos"), gamificação leve (sistema de Talentos) e um piloto focado — primeiro na SEPAL, depois replicável.
 
-## Estado atual (Fase 1 — somente frontend)
+## Estado atual (Fase 2 — conectado à API)
 
-Hoje o sistema é **100% frontend**, sem servidor próprio. Os dados ficam no estado da aplicação React (no navegador), sem persistência em banco de dados real. Isso é suficiente para demonstração e piloto inicial, mas **não substitui** um backend quando for necessário salvar dados de verdade entre sessões e usuários.
+O frontend agora se conecta a um backend real (`avalie360-api`, Node.js + Express + PostgreSQL) via `src/api.js`. Login, cadastro de missionários e envio de pulsos passam a ser persistidos no banco quando a API está disponível. Se a API estiver fora do ar, a tela mostra um aviso e o app continua funcionando com dados de demonstração em memória (não persistem).
 
 | Camada | Tecnologia | Onde está |
 |---|---|---|
-| Interface (frontend) | React + Vite | Repositório `Avalie360Orgs`, deploy via Vercel |
+| Interface (frontend) | React + Vite | Este repositório (`Avalie360Orgs`), deploy via Vercel |
 | Apresentação para a equipe | HTML estático | Repositório separado, deploy via Vercel |
-| Dados | Em memória (estado React) | Não persiste — perdido ao recarregar a página |
-| Backend / API | **Não existe ainda** | Ver seção "Fase 2" abaixo |
+| API / autenticação | Node.js + Express + JWT | Repositório `avalie360-api`, ver `.env.example` (`VITE_API_URL`) |
+| Dados | PostgreSQL (via `avalie360-api`) | Fallback: estado React em memória se a API estiver indisponível |
+
+Login é restrito a emails `@sepal.org.br` e autenticado por JWT contra a API. Veja o README do `avalie360-api` para como rodar a API localmente e conectar os dois projetos.
 
 ## Arquivos do projeto (repositório `Avalie360Orgs`)
 
@@ -54,17 +56,15 @@ Hoje o sistema é **100% frontend**, sem servidor próprio. Os dados ficam no es
 | Dependências (adicionar uma nova biblioteca) | `package.json`, depois `npm install` |
 | Como o projeto é compilado | `vite.config.js` (raramente precisa mudar) |
 
-## Fase 2 — Backend e API (planejado, ainda não implementado)
-
-O projeto foi pensado desde o início para crescer sem precisar reescrever o frontend. Quando o volume de uso ou a necessidade de dados persistentes justificar, a evolução planejada é:
+## Fase 2 — Backend e API (implementado)
 
 ```
-Frontend (React, Vercel)  →  API REST (Node.js/Express, Railway ou Render)  →  Banco de dados (PostgreSQL)
+Frontend (React, Vercel)  →  API REST (Node.js/Express, avalie360-api)  →  Banco de dados (PostgreSQL)
 ```
 
-Isso significa: o frontend atual continua no Vercel; cria-se um **projeto separado** de backend, com sua própria pasta/repositório, expondo endpoints REST (autenticação por token, respostas em JSON). O frontend passa a buscar e enviar dados para essa API em vez de manter tudo em memória.
+O backend já existe em `avalie360-api` (projeto separado) e expõe autenticação JWT (restrita a `@sepal.org.br`) e endpoints REST para missionários, pulsos e KPIs. O frontend busca e envia dados por essa API via `src/api.js`, com fallback local caso a API esteja fora do ar.
 
-Esse caminho está detalhado em `MANUTENCAO.md`, na seção "Como adicionar o backend quando chegar a hora".
+Falta rodar `avalie360-api` em produção (Railway ou Render, ver o README de lá) e apontar `VITE_API_URL` para essa URL no deploy do Vercel. Mais detalhes em `MANUTENCAO.md`, na seção "Como adicionar o backend quando chegar a hora".
 
 ## Decisões técnicas
 

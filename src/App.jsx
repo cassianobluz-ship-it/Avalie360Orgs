@@ -1,4 +1,5 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
+import { api, salvarSessao, limparSessao, carregarSessao } from "./api";
 
 // ── TOKENS ───────────────────────────────────────────────────────────────────
 const C = {
@@ -240,7 +241,7 @@ function Toast({ tl }) {
   );
 }
 
-function AppHeader({ perfil, userTL, onHome }) {
+function AppHeader({ perfil, userTL, onHome, onSair }) {
   const nv = nivel(userTL);
   return (
     <div style={{
@@ -270,6 +271,12 @@ function AppHeader({ perfil, userTL, onHome }) {
         <Badge color={perfil==="gestor"?C.accent:C.purple}>
           {perfil==="gestor"?"Gestor":"Missionário"}
         </Badge>
+        {onSair && (
+          <button onClick={onSair} title="Sair" style={{
+            background:"none", border:`1px solid ${C.border}`, color:C.muted,
+            borderRadius:20, padding:"4px 12px", fontSize:12, cursor:"pointer", fontFamily:"inherit",
+          }}>Sair</button>
+        )}
       </div>
     </div>
   );
@@ -342,6 +349,26 @@ function FieldSelect({ label, value, onChange, options, disabled }) {
 
 // ── LOGIN ────────────────────────────────────────────────────────────────────
 function Login({ onLogin }) {
+  const [email, setEmail]         = useState("");
+  const [senha, setSenha]         = useState("");
+  const [erro, setErro]           = useState("");
+  const [carregando, setCarregando] = useState(false);
+
+  async function entrar(e) {
+    e.preventDefault();
+    setErro("");
+    if (!email || !senha) { setErro("Informe email e senha."); return; }
+    setCarregando(true);
+    try {
+      const { usuario, token } = await api.login(email, senha);
+      onLogin(usuario, token);
+    } catch (err) {
+      setErro(err.message || "Não foi possível entrar.");
+    } finally {
+      setCarregando(false);
+    }
+  }
+
   return (
     <div style={{
       minHeight:"100vh", background:C.bg, fontFamily:"'Georgia',serif",
@@ -353,19 +380,20 @@ function Login({ onLogin }) {
           Avalie<span style={{ color:C.accent }}>360</span>
         </h1>
         <p style={{ color:C.text, marginBottom:4, fontSize:15, fontWeight:400 }}>Medindo Nosso Pulso Organizacional</p>
-        <p style={{ color:C.text, fontSize:15, marginBottom:36, fontWeight:400 }}>Sua voz transforma a missão ✦</p>
-        <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
-          {[["Entrar como Gestor","gestor",true],["Entrar como Missionário","missionario",false]].map(([label,role,primary])=>(
-            <button key={role} onClick={()=>onLogin(role)} style={{
-              padding:"15px 0", borderRadius:14, cursor:"pointer", fontSize:16,
-              fontWeight:primary?700:600,
-              background:primary?`linear-gradient(135deg,${C.accent},#EA580C)`:C.card,
-              color:primary?"#fff":C.text,
-              border:primary?"none":`1px solid ${C.border}`,
-              boxShadow:primary?`0 4px 24px ${C.accent}50`:"none",
-            }}>{label}</button>
-          ))}
-        </div>
+        <p style={{ color:C.text, fontSize:15, marginBottom:28, fontWeight:400 }}>Sua voz transforma a missão ✦</p>
+        <form onSubmit={entrar} style={{ display:"flex", flexDirection:"column", gap:12, textAlign:"left" }}>
+          <FieldInput label="Email (@sepal.org.br)" value={email} onChange={e=>setEmail(e.target.value)} type="email" placeholder="voce@sepal.org.br"/>
+          <FieldInput label="Senha" value={senha} onChange={e=>setSenha(e.target.value)} type="password" placeholder="••••••••"/>
+          {erro && <p style={{ color:C.danger, fontSize:13, margin:0 }}>{erro}</p>}
+          <button type="submit" disabled={carregando} style={{
+            padding:"15px 0", borderRadius:14, cursor:carregando?"default":"pointer", fontSize:16,
+            fontWeight:700, marginTop:6,
+            background:`linear-gradient(135deg,${C.accent},#EA580C)`,
+            color:"#fff", border:"none",
+            boxShadow:`0 4px 24px ${C.accent}50`,
+            opacity:carregando?0.7:1,
+          }}>{carregando?"Entrando...":"Entrar"}</button>
+        </form>
         <p style={{ color:C.muted, fontSize:12, marginTop:28 }}>Protótipo SEPAL · Avalie360 v0.4</p>
       </div>
     </div>
@@ -373,7 +401,7 @@ function Login({ onLogin }) {
 }
 
 // ── DASHBOARD ────────────────────────────────────────────────────────────────
-function Dashboard({ perfil, userTL, onAvaliar, onMissionarios, missionarios, dadosFinanceiros }) {
+function Dashboard({ perfil, userTL, onAvaliar, onMissionarios, missionarios, dadosFinanceiros, kpisApi, erroApi, onSair }) {
   const [tab, setTab] = useState("inicio");
   const isGestor = perfil === "gestor";
   const nv  = nivel(userTL);
@@ -393,7 +421,14 @@ function Dashboard({ perfil, userTL, onAvaliar, onMissionarios, missionarios, da
 
   return (
     <div style={{ fontFamily:"'Georgia',serif", background:C.bg, minHeight:"100vh", color:C.text }}>
-      <AppHeader perfil={perfil} userTL={userTL} onHome={()=>setTab("inicio")} />
+      <AppHeader perfil={perfil} userTL={userTL} onHome={()=>setTab("inicio")} onSair={onSair} />
+
+      {erroApi && (
+        <div style={{
+          background:`${C.danger}18`, borderBottom:`1px solid ${C.danger}50`,
+          color:C.danger, fontSize:13, padding:"8px 24px",
+        }}>⚠ {erroApi} (exibindo dados de demonstração)</div>
+      )}
 
       <div style={{ background:C.surface, borderBottom:`1px solid ${C.border}`, display:"flex", padding:"0 24px", gap:4, overflowX:"auto" }}>
         {TABS.map(t=>(
@@ -530,9 +565,9 @@ function Dashboard({ perfil, userTL, onAvaliar, onMissionarios, missionarios, da
         </>}
 
         {tab==="perfil"     && <PerfilTab userTL={userTL} isGestor={isGestor} nv={nv} prx={prx}/>}
-        {tab==="ranking"    && <RankingTab/>}
+        {tab==="ranking"    && <RankingTab ranking={kpisApi?.rankingTalentos}/>}
         {tab==="resultados" && isGestor && <ResultadosTab media={mediaScores}/>}
-        {tab==="kpis"       && isGestor && <KPIsTab missionarios={missionarios} dadosFinanceiros={dadosFinanceiros}/>}
+        {tab==="kpis"       && isGestor && <KPIsTab missionarios={missionarios} dadosFinanceiros={dadosFinanceiros} kpisApi={kpisApi}/>}
       </div>
     </div>
   );
@@ -612,7 +647,8 @@ function PerfilTab({ userTL, isGestor, nv, prx }) {
 }
 
 // ── TAB: RANKING ─────────────────────────────────────────────────────────────
-function RankingTab() {
+function RankingTab({ ranking }) {
+  const RANKING_EXIBIDO = ranking && ranking.length>=3 ? ranking : RANKING;
   const medalCores = [C.gold,C.silver,C.bronze];
   const medals     = ["🥇","🥈","🥉"];
   const alturas    = [190,160,140];
@@ -620,10 +656,12 @@ function RankingTab() {
     <div>
       <div style={{ marginBottom:20 }}>
         <h2 style={{ fontSize:22, fontWeight:700, margin:"0 0 4px", letterSpacing:-0.5 }}>🏆 Ranking Geral</h2>
-        <p style={{ color:C.muted, margin:0, fontSize:14 }}>T1 2026 · Atualizado semanalmente</p>
+        <p style={{ color:C.muted, margin:0, fontSize:14 }}>
+          {ranking && ranking.length>=3 ? "Dados ao vivo · Talentos acumulados" : "T1 2026 · Atualizado semanalmente"}
+        </p>
       </div>
       <div style={{ display:"flex", gap:12, marginBottom:20, alignItems:"flex-end" }}>
-        {[RANKING[1],RANKING[0],RANKING[2]].map((r,i)=>(
+        {[RANKING_EXIBIDO[1],RANKING_EXIBIDO[0],RANKING_EXIBIDO[2]].map((r,i)=>(
           <div key={r.pos} style={{
             flex:1, background:C.card, borderRadius:16, padding:"16px 12px", textAlign:"center",
             height:alturas[i], display:"flex", flexDirection:"column", justifyContent:"flex-end",
@@ -639,10 +677,10 @@ function RankingTab() {
         ))}
       </div>
       <div style={{ background:C.card, borderRadius:16, border:`1px solid ${C.border}`, overflow:"hidden", marginBottom:14 }}>
-        {RANKING.map((r,i)=>(
+        {RANKING_EXIBIDO.map((r,i)=>(
           <div key={r.pos} style={{
             padding:"14px 18px", display:"flex", alignItems:"center", gap:14,
-            borderBottom:i<RANKING.length-1?`1px solid ${C.border}`:"none",
+            borderBottom:i<RANKING_EXIBIDO.length-1?`1px solid ${C.border}`:"none",
             background:r.eu?`${C.accent}10`:"transparent",
           }}>
             <div style={{
@@ -737,7 +775,7 @@ function ResultadosTab({ media }) {
 }
 
 // ── TAB: KPIs DIRETOR ────────────────────────────────────────────────────────
-function KPIsTab({ missionarios, dadosFinanceiros }) {
+function KPIsTab({ missionarios, dadosFinanceiros, kpisApi }) {
   const fileRef = useRef();
   const [fins, setFins]       = useState(dadosFinanceiros);
   const [csvErro, setCsvErro] = useState("");
@@ -841,6 +879,36 @@ function KPIsTab({ missionarios, dadosFinanceiros }) {
         <h2 style={{ fontSize:20, fontWeight:700, margin:"0 0 4px" }}>📈 Painel de KPIs — Diretor Executivo</h2>
         <p style={{ color:C.muted, fontSize:13, margin:0 }}>Consolidação automática dos 10 indicadores estratégicos</p>
       </div>
+
+      {/* Dados ao vivo da API de pulsos */}
+      {kpisApi && (
+        <div style={{
+          background:C.card, borderRadius:16, padding:18, marginBottom:20,
+          border:`1px solid ${C.purple}40`,
+        }}>
+          <div style={{ fontWeight:700, fontSize:14, marginBottom:10 }}>📡 Pulsos respondidos (dados ao vivo da API)</div>
+          <div style={{ display:"flex", gap:12, marginBottom:kpisApi.mediaPorArea?.length?14:0, flexWrap:"wrap" }}>
+            <div style={{ background:C.bg, borderRadius:10, padding:"10px 16px", border:`1px solid ${C.border}`, flex:1, minWidth:120, textAlign:"center" }}>
+              <div style={{ fontSize:18, fontWeight:800, color:C.purple }}>{kpisApi.totalPulsosRespondidos}</div>
+              <div style={{ color:C.muted, fontSize:12 }}>Envios registrados</div>
+            </div>
+            <div style={{ background:C.bg, borderRadius:10, padding:"10px 16px", border:`1px solid ${C.border}`, flex:1, minWidth:120, textAlign:"center" }}>
+              <div style={{ fontSize:18, fontWeight:800, color:C.accent }}>{kpisApi.missionariosAtivos}/{kpisApi.totalMissionarios}</div>
+              <div style={{ color:C.muted, fontSize:12 }}>Missionários ativos</div>
+            </div>
+          </div>
+          {kpisApi.mediaPorArea?.length > 0 && (
+            <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+              {kpisApi.mediaPorArea.map(a=>(
+                <div key={a.area} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", fontSize:13 }}>
+                  <span>{a.area} <span style={{ color:C.muted }}>({a.total_respostas} resp.)</span></span>
+                  <strong style={{ color:C.purple }}>{a.media}/5</strong>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Upload financeiro */}
       <div style={{
@@ -954,7 +1022,7 @@ function KPIsTab({ missionarios, dadosFinanceiros }) {
 }
 
 // ── AVALIAÇÃO ────────────────────────────────────────────────────────────────
-function Avaliacao({ cicloId, perfil, userTL, onVoltar, onConcluir }) {
+function Avaliacao({ cicloId, perfil, userTL, token, usuario, missionarios, onVoltar, onConcluir }) {
   const ciclo = CICLOS.find(c=>c.id===cicloId);
   const OBJETOS = {
     area:      AREAS,
@@ -967,12 +1035,38 @@ function Avaliacao({ cicloId, perfil, userTL, onVoltar, onConcluir }) {
   const [respostas, setRespostas] = useState({});
   const [pergAtual, setPergAtual] = useState(0);
   const [showToast, setShowToast] = useState(false);
+  const [enviando, setEnviando] = useState(false);
+  const [erroEnvio, setErroEnvio] = useState("");
 
   const perguntas = objeto ? getPerguntasCiclo(cicloId, objeto.id) : [];
   const perg = perguntas[pergAtual];
 
   function selecionar(o) { setObjeto(o); setPergAtual(0); setRespostas({}); setEtapa("perguntas"); }
-  function enviar() { setEtapa("fim"); setShowToast(true); setTimeout(()=>setShowToast(false),3000); onConcluir(ciclo.tl); }
+
+  async function enviar() {
+    setEnviando(true);
+    setErroEnvio("");
+    try {
+      if (token) {
+        const missionarioId = missionarios?.find(m =>
+          m.email && usuario?.email && m.email.toLowerCase() === usuario.email.toLowerCase()
+        )?.id || null;
+
+        const listaRespostas = perguntas
+          .filter(p => respostas[p.id] !== undefined && respostas[p.id] !== "")
+          .map(p => ({ texto: p.texto, tipo: p.tipo, valor: respostas[p.id] }));
+
+        await api.criarPulso(token, {
+          missionarioId, ciclo: cicloId, area: objeto.nome, talentos: ciclo.tl, respostas: listaRespostas,
+        });
+      }
+    } catch (err) {
+      setErroEnvio(err.message || "Não foi possível registrar o pulso na API.");
+    } finally {
+      setEnviando(false);
+      setEtapa("fim"); setShowToast(true); setTimeout(()=>setShowToast(false),3000); onConcluir(ciclo.tl);
+    }
+  }
 
   const headerBack = (
     <div style={{ background:C.surface, borderBottom:`1px solid ${C.border}`, padding:"15px 22px", display:"flex", alignItems:"center", gap:14 }}>
@@ -1028,6 +1122,11 @@ function Avaliacao({ cicloId, perfil, userTL, onVoltar, onConcluir }) {
         <p style={{ color:C.muted, marginBottom:20, lineHeight:1.6 }}>
           Sua voz sobre <strong style={{ color:C.text }}>{objeto?.nome}</strong> foi registrada. Obrigado por fortalecer a SEPAL!
         </p>
+        {erroEnvio && (
+          <p style={{ color:C.danger, fontSize:12, marginTop:-12, marginBottom:20 }}>
+            ⚠ {erroEnvio} (registrado apenas localmente nesta sessão)
+          </p>
+        )}
         <div style={{
           background:`linear-gradient(135deg,${C.gold}20,${C.accent}20)`,
           border:`1px solid ${C.gold}50`, borderRadius:16, padding:"16px 24px", marginBottom:24,
@@ -1090,13 +1189,16 @@ function Avaliacao({ cicloId, perfil, userTL, onVoltar, onConcluir }) {
               }}>← Anterior</button>
             : <div style={{ flex:1 }}/>
           }
-          <button onClick={()=>pergAtual<perguntas.length-1?setPergAtual(p=>p+1):enviar()} style={{
-            flex:2, padding:"13px 0", borderRadius:12, cursor:"pointer", fontFamily:"inherit",
-            background:`linear-gradient(135deg,${C.accent},#EA580C)`,
-            color:"#fff", fontWeight:700, fontSize:14, border:"none",
-            boxShadow:`0 4px 16px ${C.accent}40`,
-          }}>
-            {pergAtual<perguntas.length-1?"Próxima →":`Enviar e ganhar +${ciclo.tl} TL ✓`}
+          <button
+            disabled={enviando}
+            onClick={()=>pergAtual<perguntas.length-1?setPergAtual(p=>p+1):enviar()}
+            style={{
+              flex:2, padding:"13px 0", borderRadius:12, cursor:enviando?"default":"pointer", fontFamily:"inherit",
+              background:`linear-gradient(135deg,${C.accent},#EA580C)`,
+              color:"#fff", fontWeight:700, fontSize:14, border:"none",
+              boxShadow:`0 4px 16px ${C.accent}40`, opacity:enviando?0.7:1,
+            }}>
+            {enviando ? "Enviando..." : pergAtual<perguntas.length-1?"Próxima →":`Enviar e ganhar +${ciclo.tl} TL ✓`}
           </button>
         </div>
       </div>
@@ -1105,7 +1207,7 @@ function Avaliacao({ cicloId, perfil, userTL, onVoltar, onConcluir }) {
 }
 
 // ── GESTÃO DE MISSIONÁRIOS ───────────────────────────────────────────────────
-function GestaoMissionarios({ perfil, userTL, onVoltar, missionarios, setMissionarios }) {
+function GestaoMissionarios({ perfil, userTL, onVoltar, missionarios, setMissionarios, token }) {
   const isGestor = perfil === "gestor";
   const [equipes, setEquipes]           = useState(EQUIPES_INIT);
   const [busca, setBusca]               = useState("");
@@ -1116,6 +1218,7 @@ function GestaoMissionarios({ perfil, userTL, onVoltar, missionarios, setMission
   const [modalAlerta, setModalAlerta]   = useState(false);
   const [modalImport, setModalImport]   = useState(false);
   const [modalEquipes, setModalEquipes] = useState(false);
+  const [erroSalvar, setErroSalvar]     = useState("");
   const fileRef = useRef();
 
   const aniversariantes = aniversariantesHoje(missionarios);
@@ -1127,15 +1230,38 @@ function GestaoMissionarios({ perfil, userTL, onVoltar, missionarios, setMission
     return matchBusca && matchEquipe && matchStatus;
   });
 
-  function salvar(form) {
-    if (form.id) setMissionarios(ms=>ms.map(m=>m.id===form.id?{...m,...form}:m));
-    else         setMissionarios(ms=>[...ms,{...form,id:uid(),tl:0}]);
-    setModalForm(null);
+  async function salvar(form) {
+    setErroSalvar("");
+    if (!token) {
+      // Sem sessão ativa (uso local/offline): mantém o comportamento antigo em memória
+      if (form.id) setMissionarios(ms=>ms.map(m=>m.id===form.id?{...m,...form}:m));
+      else         setMissionarios(ms=>[...ms,{...form,id:uid(),tl:0}]);
+      setModalForm(null);
+      return;
+    }
+    try {
+      if (form.id) {
+        const atualizado = await api.atualizarMissionario(token, form.id, form);
+        setMissionarios(ms=>ms.map(m=>m.id===form.id?atualizado:m));
+      } else {
+        const criado = await api.criarMissionario(token, form);
+        setMissionarios(ms=>[...ms, criado]);
+      }
+      setModalForm(null);
+    } catch (err) {
+      setErroSalvar(err.message || "Não foi possível salvar o missionário na API.");
+    }
   }
 
-  function excluir(id) {
-    if (window.confirm("Deseja remover este missionário?"))
+  async function excluir(id) {
+    if (!window.confirm("Deseja remover este missionário?")) return;
+    if (!token) { setMissionarios(ms=>ms.filter(m=>m.id!==id)); return; }
+    try {
+      await api.removerMissionario(token, id);
       setMissionarios(ms=>ms.filter(m=>m.id!==id));
+    } catch (err) {
+      alert(err.message || "Não foi possível remover o missionário na API.");
+    }
   }
 
   // Parseia CSV
@@ -1166,14 +1292,28 @@ function GestaoMissionarios({ perfil, userTL, onVoltar, missionarios, setMission
     reader.readAsText(file);
   }
 
-  function confirmarImport() {
-    const novos = csvPreview.map(r=>({
-      id:uid(), tl:0, nome:r.nome, email:r.email, whatsapp:r.whatsapp,
+  async function confirmarImport() {
+    const linhas = csvPreview.map(r=>({
+      nome:r.nome, email:r.email, whatsapp:r.whatsapp,
       equipeId:r.equipeid||equipes[0]?.id||"",
       nascimento:r.nascimento||"",
       status:r.status==="inativo"?"inativo":"ativo",
     }));
-    setMissionarios(ms=>[...ms,...novos]);
+
+    if (!token) {
+      setMissionarios(ms=>[...ms, ...linhas.map(r=>({...r, id:uid(), tl:0}))]);
+      setCsvPreview(null); setModalImport(false);
+      return;
+    }
+
+    const criados = [];
+    const falhas = [];
+    for (const linha of linhas) {
+      try { criados.push(await api.criarMissionario(token, linha)); }
+      catch { falhas.push(linha.nome); }
+    }
+    if (criados.length) setMissionarios(ms=>[...ms, ...criados]);
+    if (falhas.length) alert(`Não foi possível importar: ${falhas.join(", ")}`);
     setCsvPreview(null); setModalImport(false);
   }
 
@@ -1212,6 +1352,7 @@ function GestaoMissionarios({ perfil, userTL, onVoltar, missionarios, setMission
 
   function abrirForm(m) {
     setFormData(m && m !== "novo" ? {...m} : MISS_VAZIO);
+    setErroSalvar("");
     setModalForm(m || "novo");
   }
 
@@ -1365,6 +1506,7 @@ function GestaoMissionarios({ perfil, userTL, onVoltar, missionarios, setMission
               options={[{value:"ativo",label:"Ativo"},{value:"inativo",label:"Inativo"}]}/>
           </>}
           <FieldInput label="Data de nascimento" type="date" value={formData.nascimento} onChange={e=>setF("nascimento",e.target.value)}/>
+          {erroSalvar && <p style={{ color:C.danger, fontSize:13, margin:"0 0 8px" }}>⚠ {erroSalvar}</p>}
           <div style={{ display:"flex", gap:10, justifyContent:"flex-end", marginTop:8 }}>
             <Btn outline color={C.muted} onClick={()=>setModalForm(null)}>Cancelar</Btn>
             <Btn onClick={()=>salvar(formData)} disabled={isGestor&&(!formData.nome||!formData.email||!formData.whatsapp||!formData.equipeId)}>Salvar</Btn>
@@ -1582,19 +1724,72 @@ function GestaoMissionarios({ perfil, userTL, onVoltar, missionarios, setMission
 export default function App() {
   const [tela, setTela]             = useState("login");
   const [perfil, setPerfil]         = useState(null);
+  const [usuario, setUsuario]       = useState(null);
+  const [token, setToken]           = useState(null);
   const [cicloAtivo, setCicloAtivo] = useState(null);
   const [userTL, setUserTL]         = useState(320);
   const [missionarios, setMissionarios] = useState(MISSIONARIOS_INIT);
   const [dadosFinanceiros, setDadosFinanceiros] = useState([]);
+  const [kpisApi, setKpisApi]       = useState(null);
+  const [erroApi, setErroApi]       = useState("");
+
+  // Retoma a sessão salva (se o usuário já tinha feito login antes)
+  useEffect(() => {
+    const sessao = carregarSessao();
+    if (sessao) {
+      setToken(sessao.token);
+      setUsuario(sessao.usuario);
+      setPerfil(sessao.usuario.papel);
+      setTela("dashboard");
+    }
+  }, []);
+
+  // Sempre que houver um token válido, busca missionários e KPIs reais da API
+  useEffect(() => {
+    if (!token) return;
+    (async () => {
+      try {
+        const [listaMissionarios, kpis] = await Promise.all([
+          api.listarMissionarios(token),
+          api.buscarKpis(token),
+        ]);
+        setMissionarios(listaMissionarios);
+        setKpisApi(kpis);
+        setErroApi("");
+      } catch (err) {
+        setErroApi(err.message || "Não foi possível carregar dados da API.");
+      }
+    })();
+  }, [token]);
+
+  function entrar(usuarioLogado, tokenNovo) {
+    salvarSessao(tokenNovo, usuarioLogado);
+    setUsuario(usuarioLogado);
+    setToken(tokenNovo);
+    setPerfil(usuarioLogado.papel);
+    setTela("dashboard");
+  }
+
+  function sair() {
+    limparSessao();
+    setUsuario(null);
+    setToken(null);
+    setPerfil(null);
+    setKpisApi(null);
+    setTela("login");
+  }
 
   if (tela==="login")
-    return <Login onLogin={p=>{ setPerfil(p); setTela("dashboard"); }}/>;
+    return <Login onLogin={entrar}/>;
 
   if (tela==="dashboard")
     return <Dashboard
       perfil={perfil} userTL={userTL}
       missionarios={missionarios}
       dadosFinanceiros={dadosFinanceiros}
+      kpisApi={kpisApi}
+      erroApi={erroApi}
+      onSair={sair}
       onAvaliar={ciclo=>{ setCicloAtivo(ciclo); setTela("avaliar"); }}
       onMissionarios={()=>setTela("missionarios")}
     />;
@@ -1602,6 +1797,7 @@ export default function App() {
   if (tela==="avaliar")
     return <Avaliacao
       cicloId={cicloAtivo} perfil={perfil} userTL={userTL}
+      token={token} usuario={usuario} missionarios={missionarios}
       onVoltar={()=>setTela("dashboard")}
       onConcluir={tl=>{ setUserTL(p=>p+tl); setTela("dashboard"); }}
     />;
@@ -1611,6 +1807,7 @@ export default function App() {
       perfil={perfil} userTL={userTL}
       missionarios={missionarios}
       setMissionarios={setMissionarios}
+      token={token}
       onVoltar={()=>setTela("dashboard")}
     />;
 }
