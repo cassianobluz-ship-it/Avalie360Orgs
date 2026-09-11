@@ -146,6 +146,21 @@ const fmtData    = iso => iso ? new Date(iso + "T12:00:00").toLocaleDateString("
 const linkWA     = (num, msg) => `https://wa.me/${num.replace(/\D/g,"")}?text=${encodeURIComponent(msg)}`;
 const linkEmail  = (email, assunto, corpo) => `mailto:${email}?subject=${encodeURIComponent(assunto)}&body=${encodeURIComponent(corpo)}`;
 
+// Calcula quais conquistas o usuário desbloqueou de verdade, a partir do histórico real
+// vindo da API (antes eram flags fixas no código, iguais para todo mundo).
+function calcularConquistas({ tl, ciclosCompletos, tiposFeitos, posicaoRanking, criadoEm }) {
+  const diasComoMembro = criadoEm ? (Date.now() - new Date(criadoEm).getTime()) / 86400000 : null;
+  const desbloqueada = {
+    primeira_voz: ciclosCompletos >= 1,
+    contribuidor: tl >= 100,
+    fiel:         ciclosCompletos >= 3,
+    voz_missao:   ["area", "evento", "lideranca"].every(t => tiposFeitos.includes(t)),
+    referencia:   posicaoRanking != null && posicaoRanking <= 3,
+    guardiao:     diasComoMembro != null && diasComoMembro >= 365,
+  };
+  return CONQUISTAS.map(c => ({ ...c, on: desbloqueada[c.id] ?? c.on }));
+}
+
 function getPerguntasCiclo(cicloId, objetoId) {
   if (cicloId === "area")      return PERGUNTAS_AREA[objetoId] || [];
   if (cicloId === "evento")    return PERGUNTAS_EVENTO;
@@ -155,12 +170,11 @@ function getPerguntasCiclo(cicloId, objetoId) {
 
 function aniversariantesHoje(lista) {
   const hoje = new Date();
-  const reais = lista.filter(m => {
+  return lista.filter(m => {
     if (!m.nascimento) return false;
     const d = new Date(m.nascimento + "T12:00:00");
     return d.getDate() === hoje.getDate() && d.getMonth() === hoje.getMonth();
   });
-  return reais.length ? reais : [lista[0]]; // demo: sempre mostra 1
 }
 
 // ── COMPONENTES COMPARTILHADOS ────────────────────────────────────────────────
@@ -401,7 +415,7 @@ function Login({ onLogin }) {
 }
 
 // ── DASHBOARD ────────────────────────────────────────────────────────────────
-function Dashboard({ perfil, userTL, onAvaliar, onMissionarios, missionarios, dadosFinanceiros, kpisApi, erroApi, onSair }) {
+function Dashboard({ perfil, userTL, ciclosCompletos, posicaoRanking, conquistas, onAvaliar, onMissionarios, missionarios, dadosFinanceiros, kpisApi, erroApi, onSair }) {
   const [tab, setTab] = useState("inicio");
   const isGestor = perfil === "gestor";
   const nv  = nivel(userTL);
@@ -474,14 +488,14 @@ function Dashboard({ perfil, userTL, onAvaliar, onMissionarios, missionarios, da
                 </div>
               </div>
               <div style={{ display:"flex", gap:8, flexWrap:"wrap" }}>
-                {CONQUISTAS.filter(c=>c.on).map(c=>(
+                {conquistas.filter(c=>c.on).map(c=>(
                   <div key={c.id} style={{
                     background:C.bg, border:`1px solid ${C.border}`,
                     borderRadius:10, padding:"5px 10px",
                     display:"flex", alignItems:"center", gap:5, fontSize:12,
                   }}><span>{c.icon}</span><span style={{ fontWeight:600 }}>{c.nome}</span></div>
                 ))}
-                {CONQUISTAS.filter(c=>!c.on).slice(0,2).map(c=>(
+                {conquistas.filter(c=>!c.on).slice(0,2).map(c=>(
                   <div key={c.id} style={{
                     background:C.bg, border:`1px solid ${C.border}`,
                     borderRadius:10, padding:"5px 10px",
@@ -526,14 +540,15 @@ function Dashboard({ perfil, userTL, onAvaliar, onMissionarios, missionarios, da
                 borderRadius:12, padding:"12px 16px",
                 display:"flex", alignItems:"center", gap:14,
               }}>
-                <span style={{ fontSize:28, fontWeight:900, color:C.accent }}>#4</span>
+                <span style={{ fontSize:28, fontWeight:900, color:C.accent }}>
+                  {posicaoRanking ? `#${posicaoRanking}` : "—"}
+                </span>
                 <div>
-                  <div style={{ fontWeight:700 }}>Você · 320 TL</div>
-                  <div style={{ color:C.muted, fontSize:13 }}>6 avaliações · ↑ subindo</div>
-                </div>
-                <div style={{ marginLeft:"auto", textAlign:"right" }}>
-                  <div style={{ color:C.muted, fontSize:12 }}>Para o #3</div>
-                  <div style={{ color:C.success, fontWeight:700 }}>+40 TL</div>
+                  <div style={{ fontWeight:700 }}>Você · {userTL} TL</div>
+                  <div style={{ color:C.muted, fontSize:13 }}>
+                    {ciclosCompletos} avaliaç{ciclosCompletos===1?"ão":"ões"}
+                    {!posicaoRanking && " · fora do Top 5"}
+                  </div>
                 </div>
               </div>
             </div>
@@ -564,7 +579,7 @@ function Dashboard({ perfil, userTL, onAvaliar, onMissionarios, missionarios, da
           </>}
         </>}
 
-        {tab==="perfil"     && <PerfilTab userTL={userTL} isGestor={isGestor} nv={nv} prx={prx}/>}
+        {tab==="perfil"     && <PerfilTab userTL={userTL} isGestor={isGestor} nv={nv} prx={prx} ciclosCompletos={ciclosCompletos} posicaoRanking={posicaoRanking} conquistas={conquistas}/>}
         {tab==="ranking"    && <RankingTab ranking={kpisApi?.rankingTalentos}/>}
         {tab==="resultados" && isGestor && <ResultadosTab media={mediaScores}/>}
         {tab==="kpis"       && isGestor && <KPIsTab missionarios={missionarios} dadosFinanceiros={dadosFinanceiros} kpisApi={kpisApi}/>}
@@ -574,7 +589,7 @@ function Dashboard({ perfil, userTL, onAvaliar, onMissionarios, missionarios, da
 }
 
 // ── TAB: PERFIL ──────────────────────────────────────────────────────────────
-function PerfilTab({ userTL, isGestor, nv, prx }) {
+function PerfilTab({ userTL, isGestor, nv, prx, ciclosCompletos, posicaoRanking, conquistas }) {
   return (
     <div>
       <div style={{
@@ -596,7 +611,7 @@ function PerfilTab({ userTL, isGestor, nv, prx }) {
           </div>
         </div>
         <div style={{ display:"flex", gap:12, marginBottom:16 }}>
-          {[["TL Total",userTL,C.accent],["Avaliações","6",C.success],["Posição","#4",C.gold]].map(([label,val,cor])=>(
+          {[["TL Total",userTL,C.accent],["Avaliações",ciclosCompletos,C.success],["Posição",posicaoRanking?`#${posicaoRanking}`:"—",C.gold]].map(([label,val,cor])=>(
             <div key={label} style={{ flex:1, background:C.bg, borderRadius:12, padding:"12px 0", textAlign:"center", border:`1px solid ${C.border}` }}>
               <div style={{ fontSize:22, fontWeight:900, color:cor }}>{val}</div>
               <div style={{ color:C.muted, fontSize:12 }}>{label}</div>
@@ -612,7 +627,7 @@ function PerfilTab({ userTL, isGestor, nv, prx }) {
 
       <h3 style={{ color:C.muted, fontSize:11, letterSpacing:2, textTransform:"uppercase", margin:"0 0 12px" }}>Conquistas</h3>
       <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(175px,1fr))", gap:10, marginBottom:20 }}>
-        {CONQUISTAS.map(c=>(
+        {conquistas.map(c=>(
           <div key={c.id} style={{
             background:c.on?C.card:C.bg, borderRadius:14, padding:"14px 16px",
             border:`1px solid ${c.on?C.accent+"50":C.border}`,
@@ -648,7 +663,10 @@ function PerfilTab({ userTL, isGestor, nv, prx }) {
 
 // ── TAB: RANKING ─────────────────────────────────────────────────────────────
 function RankingTab({ ranking }) {
-  const RANKING_EXIBIDO = ranking && ranking.length>=3 ? ranking : RANKING;
+  // Avatar e tendência são só decorativos e a API não tem essa informação hoje;
+  // preenchemos com um valor neutro em vez de deixar em branco.
+  const RANKING_EXIBIDO = (ranking && ranking.length>=3 ? ranking : RANKING)
+    .map(r => ({ avatar:"🙂", tend:"→", ciclos:0, ...r }));
   const medalCores = [C.gold,C.silver,C.bronze];
   const medals     = ["🥇","🥈","🥉"];
   const alturas    = [190,160,140];
@@ -661,17 +679,19 @@ function RankingTab({ ranking }) {
         </p>
       </div>
       <div style={{ display:"flex", gap:12, marginBottom:20, alignItems:"flex-end" }}>
-        {[RANKING_EXIBIDO[1],RANKING_EXIBIDO[0],RANKING_EXIBIDO[2]].map((r,i)=>(
+        {/* Ordem visual é silver-gold-bronze (pódio), mas cor/medalha/altura seguem a posição
+            real de cada pessoa (r.pos), não a ordem do slot — senão o 1º e o 2º lugar trocam de lugar. */}
+        {[RANKING_EXIBIDO[1],RANKING_EXIBIDO[0],RANKING_EXIBIDO[2]].map((r)=>(
           <div key={r.pos} style={{
             flex:1, background:C.card, borderRadius:16, padding:"16px 12px", textAlign:"center",
-            height:alturas[i], display:"flex", flexDirection:"column", justifyContent:"flex-end",
-            border:`2px solid ${medalCores[i]}50`,
-            backgroundImage:`linear-gradient(180deg,${medalCores[i]}08,${C.card})`,
+            height:alturas[r.pos-1], display:"flex", flexDirection:"column", justifyContent:"flex-end",
+            border:`2px solid ${medalCores[r.pos-1]}50`,
+            backgroundImage:`linear-gradient(180deg,${medalCores[r.pos-1]}08,${C.card})`,
           }}>
-            <div style={{ fontSize:28 }}>{medals[i]}</div>
+            <div style={{ fontSize:28 }}>{medals[r.pos-1]}</div>
             <div style={{ fontSize:24 }}>{r.avatar}</div>
             <div style={{ fontWeight:700, fontSize:13, marginTop:6 }}>{r.nome}</div>
-            <div style={{ color:medalCores[i], fontWeight:800, fontSize:16 }}>{r.tl} TL</div>
+            <div style={{ color:medalCores[r.pos-1], fontWeight:800, fontSize:16 }}>{r.tl} TL</div>
             <div style={{ color:C.muted, fontSize:12 }}>{r.ciclos} avaliações</div>
           </div>
         ))}
@@ -897,16 +917,34 @@ function KPIsTab({ missionarios, dadosFinanceiros, kpisApi }) {
               <div style={{ color:C.muted, fontSize:12 }}>Missionários ativos</div>
             </div>
           </div>
-          {kpisApi.mediaPorArea?.length > 0 && (
-            <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
-              {kpisApi.mediaPorArea.map(a=>(
-                <div key={a.area} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", fontSize:13 }}>
-                  <span>{a.area} <span style={{ color:C.muted }}>({a.total_respostas} resp.)</span></span>
-                  <strong style={{ color:C.purple }}>{a.media}/5</strong>
+          {kpisApi.mediaPorArea?.length > 0 && (() => {
+            // Separa áreas operacionais (com nome/ícone já definidos) de eventos e liderança
+            // (que usam o próprio nome do evento/liderado como "área"), em vez de misturar tudo numa lista só.
+            const porCiclo = { area: [], evento: [], lideranca: [] };
+            for (const linha of kpisApi.mediaPorArea) (porCiclo[linha.ciclo] || porCiclo.area).push(linha);
+
+            return Object.entries(porCiclo).filter(([, linhas]) => linhas.length > 0).map(([cicloId, linhas]) => {
+              const ciclo = CICLOS.find(c => c.id === cicloId);
+              return (
+                <div key={cicloId} style={{ marginBottom:12 }}>
+                  <div style={{ color:C.muted, fontSize:11, letterSpacing:1, textTransform:"uppercase", marginBottom:6 }}>
+                    {ciclo ? `${ciclo.icon} ${ciclo.label}` : cicloId}
+                  </div>
+                  <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+                    {linhas.map(a => {
+                      const areaInfo = cicloId === "area" ? AREAS.find(ar => ar.id === a.area) : null;
+                      return (
+                        <div key={`${a.ciclo}-${a.area}`} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", fontSize:13 }}>
+                          <span>{areaInfo ? `${areaInfo.icon} ${areaInfo.nome}` : a.area} <span style={{ color:C.muted }}>({a.total_respostas} resp.)</span></span>
+                          <strong style={{ color:C.purple }}>{a.media}/5</strong>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
-              ))}
-            </div>
-          )}
+              );
+            });
+          })()}
         </div>
       )}
 
@@ -1043,9 +1081,17 @@ function Avaliacao({ cicloId, perfil, userTL, token, usuario, missionarios, onVo
 
   function selecionar(o) { setObjeto(o); setPergAtual(0); setRespostas({}); setEtapa("perguntas"); }
 
+  // Perguntas de escala e binárias são obrigatórias para avançar; a aberta continua opcional.
+  function respondida(p) {
+    if (!p) return false;
+    if (p.tipo === "aberta") return true;
+    return respostas[p.id] !== undefined && respostas[p.id] !== "";
+  }
+
   async function enviar() {
     setEnviando(true);
     setErroEnvio("");
+    let novoTotal = userTL + ciclo.tl;
     try {
       if (token) {
         const missionarioId = missionarios?.find(m =>
@@ -1056,15 +1102,18 @@ function Avaliacao({ cicloId, perfil, userTL, token, usuario, missionarios, onVo
           .filter(p => respostas[p.id] !== undefined && respostas[p.id] !== "")
           .map(p => ({ texto: p.texto, tipo: p.tipo, valor: respostas[p.id] }));
 
-        await api.criarPulso(token, {
+        const resultado = await api.criarPulso(token, {
           missionarioId, ciclo: cicloId, area: objeto.nome, talentos: ciclo.tl, respostas: listaRespostas,
         });
+        if (resultado?.missionario?.talentos !== undefined) {
+          novoTotal = resultado.missionario.talentos;
+        }
       }
     } catch (err) {
       setErroEnvio(err.message || "Não foi possível registrar o pulso na API.");
     } finally {
       setEnviando(false);
-      setEtapa("fim"); setShowToast(true); setTimeout(()=>setShowToast(false),3000); onConcluir(ciclo.tl);
+      setEtapa("fim"); setShowToast(true); setTimeout(()=>setShowToast(false),3000); onConcluir(novoTotal);
     }
   }
 
@@ -1190,17 +1239,23 @@ function Avaliacao({ cicloId, perfil, userTL, token, usuario, missionarios, onVo
             : <div style={{ flex:1 }}/>
           }
           <button
-            disabled={enviando}
+            disabled={enviando || !respondida(perg)}
             onClick={()=>pergAtual<perguntas.length-1?setPergAtual(p=>p+1):enviar()}
             style={{
-              flex:2, padding:"13px 0", borderRadius:12, cursor:enviando?"default":"pointer", fontFamily:"inherit",
+              flex:2, padding:"13px 0", borderRadius:12,
+              cursor:(enviando || !respondida(perg))?"default":"pointer", fontFamily:"inherit",
               background:`linear-gradient(135deg,${C.accent},#EA580C)`,
               color:"#fff", fontWeight:700, fontSize:14, border:"none",
-              boxShadow:`0 4px 16px ${C.accent}40`, opacity:enviando?0.7:1,
+              boxShadow:`0 4px 16px ${C.accent}40`, opacity:(enviando || !respondida(perg))?0.5:1,
             }}>
             {enviando ? "Enviando..." : pergAtual<perguntas.length-1?"Próxima →":`Enviar e ganhar +${ciclo.tl} TL ✓`}
           </button>
         </div>
+        {!respondida(perg) && (
+          <p style={{ color:C.muted, fontSize:12, textAlign:"center", marginTop:10 }}>
+            Responda para continuar.
+          </p>
+        )}
       </div>
     </div>
   );
@@ -1211,6 +1266,7 @@ function GestaoMissionarios({ perfil, userTL, onVoltar, missionarios, setMission
   const isGestor = perfil === "gestor";
   const [equipes, setEquipes]           = useState(EQUIPES_INIT);
   const [busca, setBusca]               = useState("");
+  const [erroEquipes, setErroEquipes]   = useState("");
   const [filtroEquipe, setFiltroEquipe] = useState("");
   const [filtroStatus, setFiltroStatus] = useState("");
   const [modalForm, setModalForm]       = useState(null);
@@ -1220,6 +1276,19 @@ function GestaoMissionarios({ perfil, userTL, onVoltar, missionarios, setMission
   const [modalEquipes, setModalEquipes] = useState(false);
   const [erroSalvar, setErroSalvar]     = useState("");
   const fileRef = useRef();
+
+  // Equipes agora vêm da API (antes eram só um array em memória, perdido a cada reload).
+  useEffect(() => {
+    if (!token) return;
+    (async () => {
+      try {
+        const dados = await api.listarEquipes(token);
+        setEquipes(dados.map(e => ({ id: e.id, lider: e.nome })));
+      } catch (err) {
+        setErroEquipes(err.message || "Não foi possível carregar as equipes da API.");
+      }
+    })();
+  }, [token]);
 
   const aniversariantes = aniversariantesHoje(missionarios);
 
@@ -1250,6 +1319,31 @@ function GestaoMissionarios({ perfil, userTL, onVoltar, missionarios, setMission
       setModalForm(null);
     } catch (err) {
       setErroSalvar(err.message || "Não foi possível salvar o missionário na API.");
+    }
+  }
+
+  async function salvarEquipes() {
+    if (!token) { setEquipes(listaEquipes); setModalEquipes(false); return; }
+    try {
+      const idsOriginais = new Set(equipes.map(e => e.id));
+      const idsNovos = new Set(listaEquipes.map(e => e.id));
+
+      for (const e of equipes.filter(e => !idsNovos.has(e.id))) {
+        await api.removerEquipe(token, e.id);
+      }
+      for (const e of listaEquipes.filter(e => idsOriginais.has(e.id))) {
+        const original = equipes.find(o => o.id === e.id);
+        if (original && original.lider !== e.lider) await api.atualizarEquipe(token, e.id, e.lider);
+      }
+      for (const e of listaEquipes.filter(e => !idsOriginais.has(e.id))) {
+        await api.criarEquipe(token, e.lider);
+      }
+
+      const dados = await api.listarEquipes(token);
+      setEquipes(dados.map(e => ({ id: e.id, lider: e.nome })));
+      setModalEquipes(false);
+    } catch (err) {
+      alert(err.message || "Não foi possível salvar as equipes na API.");
     }
   }
 
@@ -1385,6 +1479,13 @@ function GestaoMissionarios({ perfil, userTL, onVoltar, missionarios, setMission
       </div>
 
       <div style={{ maxWidth:1000, margin:"0 auto", padding:"24px 18px" }}>
+
+        {erroEquipes && (
+          <div style={{
+            background:`${C.danger}18`, border:`1px solid ${C.danger}50`, borderRadius:12,
+            color:C.danger, fontSize:13, padding:"10px 16px", marginBottom:16,
+          }}>⚠ {erroEquipes}</div>
+        )}
 
         {/* Banner aniversariantes */}
         {aniversariantes.length>0 && (
@@ -1712,7 +1813,7 @@ function GestaoMissionarios({ perfil, userTL, onVoltar, missionarios, setMission
           </div>
           <div style={{ display:"flex", gap:10, justifyContent:"flex-end" }}>
             <Btn outline color={C.muted} onClick={()=>setModalEquipes(false)}>Cancelar</Btn>
-            <Btn onClick={()=>{setEquipes(listaEquipes);setModalEquipes(false);}}>Salvar equipes</Btn>
+            <Btn onClick={salvarEquipes}>Salvar equipes</Btn>
           </div>
         </Modal>
       )}
@@ -1727,11 +1828,13 @@ export default function App() {
   const [usuario, setUsuario]       = useState(null);
   const [token, setToken]           = useState(null);
   const [cicloAtivo, setCicloAtivo] = useState(null);
-  const [userTL, setUserTL]         = useState(320);
+  const [userTL, setUserTL]         = useState(0);
   const [missionarios, setMissionarios] = useState(MISSIONARIOS_INIT);
   const [dadosFinanceiros, setDadosFinanceiros] = useState([]);
   const [kpisApi, setKpisApi]       = useState(null);
   const [erroApi, setErroApi]       = useState("");
+  // Histórico real do usuário logado, vindo da API — base para os Talentos exibidos e as Conquistas.
+  const [meuHistorico, setMeuHistorico] = useState({ missionarioId: null, ciclosCompletos: 0, tiposFeitos: [], criadoEm: null });
 
   // Retoma a sessão salva (se o usuário já tinha feito login antes)
   useEffect(() => {
@@ -1756,11 +1859,35 @@ export default function App() {
         setMissionarios(listaMissionarios);
         setKpisApi(kpis);
         setErroApi("");
+
+        const meu = listaMissionarios.find(m =>
+          m.email && usuario?.email && m.email.toLowerCase() === usuario.email.toLowerCase()
+        );
+        if (meu) {
+          setUserTL(meu.tl || 0);
+          try {
+            const pulsos = await api.listarPulsosMissionario(token, meu.id);
+            const submissoes = new Set(pulsos.map(p => p.submissao_id));
+            const tipos = [...new Set(pulsos.map(p => p.ciclo))];
+            setMeuHistorico({ missionarioId: meu.id, ciclosCompletos: submissoes.size, tiposFeitos: tipos, criadoEm: meu.criado_em });
+          } catch {
+            setMeuHistorico({ missionarioId: meu.id, ciclosCompletos: 0, tiposFeitos: [], criadoEm: meu.criado_em });
+          }
+        }
       } catch (err) {
         setErroApi(err.message || "Não foi possível carregar dados da API.");
       }
     })();
-  }, [token]);
+  }, [token, usuario]);
+
+  const minhaPosicaoRanking = kpisApi?.rankingTalentos?.find(r => r.eu)?.pos ?? null;
+  const conquistas = calcularConquistas({
+    tl: userTL,
+    ciclosCompletos: meuHistorico.ciclosCompletos,
+    tiposFeitos: meuHistorico.tiposFeitos,
+    posicaoRanking: minhaPosicaoRanking,
+    criadoEm: meuHistorico.criadoEm,
+  });
 
   function entrar(usuarioLogado, tokenNovo) {
     salvarSessao(tokenNovo, usuarioLogado);
@@ -1776,6 +1903,8 @@ export default function App() {
     setToken(null);
     setPerfil(null);
     setKpisApi(null);
+    setUserTL(0);
+    setMeuHistorico({ missionarioId: null, ciclosCompletos: 0, tiposFeitos: [], criadoEm: null });
     setTela("login");
   }
 
@@ -1785,6 +1914,9 @@ export default function App() {
   if (tela==="dashboard")
     return <Dashboard
       perfil={perfil} userTL={userTL}
+      ciclosCompletos={meuHistorico.ciclosCompletos}
+      posicaoRanking={minhaPosicaoRanking}
+      conquistas={conquistas}
       missionarios={missionarios}
       dadosFinanceiros={dadosFinanceiros}
       kpisApi={kpisApi}
@@ -1799,7 +1931,7 @@ export default function App() {
       cicloId={cicloAtivo} perfil={perfil} userTL={userTL}
       token={token} usuario={usuario} missionarios={missionarios}
       onVoltar={()=>setTela("dashboard")}
-      onConcluir={tl=>{ setUserTL(p=>p+tl); setTela("dashboard"); }}
+      onConcluir={(novoTotalTalentos)=>{ setUserTL(novoTotalTalentos); setTela("dashboard"); }}
     />;
 
   if (tela==="missionarios")

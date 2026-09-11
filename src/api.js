@@ -56,6 +56,12 @@ export const api = {
   removerMissionario: (token, id) => chamar(`/missionarios/${id}`, { method: "DELETE", token }),
 
   criarPulso: (token, dados) => chamar("/pulsos", { method: "POST", body: dados, token }),
+  listarPulsosMissionario: (token, missionarioId) => chamar(`/pulsos/missionario/${missionarioId}`, { token }),
 
   buscarKpis: (token) => chamar("/kpis", { token }),
+
+  listarEquipes: (token) => chamar("/equipes", { token }),
+  criarEquipe: (token, nome) => chamar("/equipes", { method: "POST", body: { nome }, token }),
+  atualizarEquipe: (token, id, nome) => chamar(`/equipes/${id}`, { method: "PUT", body: { nome }, token }),
+  removerEquipe: (token, id) => chamar(`/equipes/${id}`, { method: "DELETE", token }),
 };
