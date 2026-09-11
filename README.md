@@ -6,18 +6,18 @@ Sistema de avaliação organizacional tipo "pulso" para a SEPAL (organização m
 
 Organizações grandes precisam de feedback constante sobre como áreas, eventos e lideranças estão funcionando, mas modelos tradicionais de avaliação 360 são lentos e cansam quem participa. O Avalie360 resolve isso com ciclos curtos ("pulsos"), gamificação leve (sistema de Talentos) e um piloto focado — primeiro na SEPAL, depois replicável.
 
-## Estado atual (Fase 2 — conectado à API)
+## Estado atual (Fase 2 — em produção)
 
-O frontend agora se conecta a um backend real (`avalie360-api`, Node.js + Express + PostgreSQL) via `src/api.js`. Login, cadastro de missionários e envio de pulsos passam a ser persistidos no banco quando a API está disponível. Se a API estiver fora do ar, a tela mostra um aviso e o app continua funcionando com dados de demonstração em memória (não persistem).
+O sistema está no ar de ponta a ponta: frontend, API e banco de dados, todos em produção. Login, cadastro de missionários, envio de pulsos, gestão de equipes e KPIs são persistidos de verdade no banco. Não há mais modo "demonstração em memória" como padrão — a API é obrigatória para uso real.
 
 | Camada | Tecnologia | Onde está |
 |---|---|---|
-| Interface (frontend) | React + Vite | Este repositório (`Avalie360Orgs`), deploy via Vercel |
+| Interface (frontend) | React + Vite | Este repositório (`Avalie360Orgs`), deploy automático via Vercel |
 | Apresentação para a equipe | HTML estático | Repositório separado, deploy via Vercel |
-| API / autenticação | Node.js + Express + JWT | Repositório `avalie360-api`, ver `.env.example` (`VITE_API_URL`) |
-| Dados | PostgreSQL (via `avalie360-api`) | Fallback: estado React em memória se a API estiver indisponível |
+| API / autenticação | Node.js + Express + JWT | Repositório privado `avalie360-api`, hospedado em VPS próprio (não Vercel/Railway) |
+| Dados | PostgreSQL | Mesmo servidor da API |
 
-Login é restrito a emails `@sepal.org.br` e autenticado por JWT contra a API. Veja o README do `avalie360-api` para como rodar a API localmente e conectar os dois projetos.
+Login é restrito a emails `@sepal.org.br` e autenticado por JWT contra a API. Existe também um ambiente de staging isolado para testar mudanças antes de ir para produção — detalhes de acesso (URLs, credenciais) ficam num documento privado fora deste repositório público, não em texto solto no código.
 
 ## Arquivos do projeto (repositório `Avalie360Orgs`)
 
@@ -56,15 +56,15 @@ Login é restrito a emails `@sepal.org.br` e autenticado por JWT contra a API. V
 | Dependências (adicionar uma nova biblioteca) | `package.json`, depois `npm install` |
 | Como o projeto é compilado | `vite.config.js` (raramente precisa mudar) |
 
-## Fase 2 — Backend e API (implementado)
+## Fase 2 — Backend e API (em produção)
 
 ```
 Frontend (React, Vercel)  →  API REST (Node.js/Express, avalie360-api)  →  Banco de dados (PostgreSQL)
 ```
 
-O backend já existe em `avalie360-api` (projeto separado) e expõe autenticação JWT (restrita a `@sepal.org.br`) e endpoints REST para missionários, pulsos e KPIs. O frontend busca e envia dados por essa API via `src/api.js`, com fallback local caso a API esteja fora do ar.
+O backend existe em `avalie360-api` (projeto separado, repositório privado) e expõe autenticação JWT (restrita a `@sepal.org.br`), controle de acesso por papel (gestor/missionário), e endpoints REST para missionários, equipes, pulsos e KPIs. O frontend busca e envia dados por essa API via `src/api.js`.
 
-Falta rodar `avalie360-api` em produção (Railway ou Render, ver o README de lá) e apontar `VITE_API_URL` para essa URL no deploy do Vercel. Mais detalhes em `MANUTENCAO.md`, na seção "Como adicionar o backend quando chegar a hora".
+A API já está publicada e o Vercel já aponta para ela via `VITE_API_URL`. Mais detalhes operacionais (onde está hospedada, como fazer deploy de mudanças, ambiente de staging) ficam em `MANUTENCAO.md` e num documento privado de infraestrutura fora deste repositório.
 
 ## Decisões técnicas
 
@@ -77,5 +77,5 @@ Falta rodar `avalie360-api` em produção (Railway ou Render, ver o README de l�
 **Alternativas descartadas:** um backend completo (com banco de dados) desde o primeiro dia foi descartado para não atrasar o piloto — o custo de adicionar isso depois é baixo, porque a arquitetura (REST API separada do frontend) já foi prevista desde o início.
 
 **Pontos frágeis para atenção futura:**
-- Dados não persistem entre sessões — qualquer reload de página apaga o que foi preenchido. Isso **precisa** ser resolvido antes de um uso real além de demonstração.
 - `src/App.jsx` concentra toda a lógica do sistema num único arquivo grande. Funciona bem para o tamanho atual, mas se o sistema crescer muito mais, vale dividir em componentes menores (ver `MANUTENCAO.md`).
+- Existem contas de teste com senha padrão ainda ativas no banco de produção (ver documento privado de infraestrutura) — trocar ou remover antes de qualquer divulgação pública do link.

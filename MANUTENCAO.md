@@ -5,19 +5,23 @@ Este documento existe para que qualquer pessoa (incluindo você mesmo, no futuro
 ## Mapa da estrutura atual
 
 ```
-Avalie360Orgs/                  ← repositório do frontend (Fase 1, atual)
+Avalie360Orgs/                  ← repositório do frontend (público)
 ├── index.html                  ← raiz HTML, carrega a aplicação
 ├── package.json                ← dependências e comandos
 ├── vite.config.js              ← configuração de build
 └── src/
     ├── main.jsx                ← ponto de entrada, monta o React na página
-    └── App.jsx                 ← TODA a lógica do sistema está aqui
+    ├── App.jsx                 ← TODA a lógica de interface está aqui
+    └── api.js                  ← todas as chamadas à API (avalie360-api)
+
+avalie360-api/                  ← repositório do backend (privado, projeto separado)
+└── (Node.js + Express + PostgreSQL, hospedado em VPS próprio — ver INFRAESTRUTURA.md)
 
 Avalie360_Apresentacao/         ← repositório separado, página de apresentação
 └── (HTML estático, deploy próprio no Vercel)
 ```
 
-Hoje **não existe backend nem banco de dados**. Tudo roda no navegador. Isso é importante entender: dados preenchidos por um usuário não são vistos por outro usuário, e desaparecem ao recarregar a página.
+O sistema tem backend e banco de dados reais, em produção. Dados preenchidos por um usuário **são** persistidos e visíveis para outros usuários com permissão. Os detalhes operacionais (URLs, credenciais, acesso ao servidor) não ficam neste arquivo público — ver `INFRAESTRUTURA.md` (documento local, no `.gitignore`, nunca commitado).
 
 ## Pontos de entrada para alterações comuns
 
@@ -32,53 +36,31 @@ Hoje **não existe backend nem banco de dados**. Tudo roda no navegador. Isso é
 
 ## Alertas — partes que exigem cuidado especial
 
-- **`src/App.jsx` é um arquivo único e grande.** Concentra toda a lógica do sistema (pulsos, Talentos, ranking, gestão de missionários, dashboard). Isso é aceitável no tamanho atual, mas qualquer alteração deve ser testada localmente (`npm run dev`) antes de subir ao Vercel, porque um erro de sintaxe nesse arquivo quebra a aplicação inteira.
-- **Não há autenticação real ainda.** O perfil "Gestor" (que vê o dashboard de KPIs) provavelmente é controlado por lógica simples no frontend, não por um sistema de login seguro. Isso é adequado para piloto interno, mas **não deve ser usado** se dados sensíveis ou externos entrarem no sistema, sem antes implementar autenticação real (ver Fase 2).
-- **Sem persistência de dados.** Qualquer dado inserido (respostas de pulso, cadastro de missionário) existe apenas durante a sessão do navegador. Antes de qualquer uso real com a equipe da SEPAL, isso precisa estar resolvido.
+- **`src/App.jsx` é um arquivo único e grande.** Concentra toda a lógica de interface (pulsos, Talentos, ranking, gestão de missionários, dashboard). Isso é aceitável no tamanho atual, mas qualquer alteração deve ser testada localmente (`npm run dev`) antes de subir ao Vercel, porque um erro de sintaxe nesse arquivo quebra a aplicação inteira.
+- **Autenticação real via JWT**, com papel (`gestor`/`missionario`) controlado no backend — o frontend só esconde botões visualmente, mas a API confere o papel de verdade em cada rota administrativa.
+- **Existem contas de teste com senha padrão ativas em produção.** Ver documento privado `INFRAESTRUTURA.md` (não commitado) — trocar/remover antes de qualquer divulgação pública do link.
+- **Mudança no backend (`avalie360-api`) exige deploy manual** — não há CI/CD automático como o Vercel tem para o frontend. Depois de dar push no repositório, é preciso entrar no servidor via SSH e atualizar o código rodando (`git pull`, `npm install` se mudou dependência, `pm2 restart avalie360-api`). Detalhes de acesso em `INFRAESTRUTURA.md`.
+- **Antes de mudar algo arriscado no backend**, teste primeiro no ambiente de staging (API separada, banco separado, mesma máquina) antes de tocar em produção. Ver `INFRAESTRUTURA.md`.
 
-## Como adicionar o backend quando chegar a hora (Fase 2)
+## Como fazer deploy de uma mudança no backend
 
-Quando o piloto validar o conceito e for hora de ter dados persistentes e múltiplos usuários reais, o caminho planejado é:
+O frontend (`Avalie360Orgs`) já tem deploy automático: qualquer push no branch `main` publica no Vercel sozinho.
 
-**1. Criar um repositório novo, separado**, por exemplo `Avalie360-API`, contendo um backend em Node.js (framework Express é o mais simples e documentado).
+O backend (`avalie360-api`) não tem isso — os passos são:
 
-**2. Hospedar esse backend em Railway ou Render** (não no Vercel — Vercel é otimizado para frontend e funções leves, não para um servidor de API completo e banco de dados persistente).
-
-**3. Adicionar um banco de dados PostgreSQL** — tanto Railway quanto Render oferecem isso integrado, sem precisar contratar serviço separado.
-
-**4. Estrutura mínima esperada do backend:**
-```
-Avalie360-API/
-├── src/
-│   ├── rotas/          ← endpoints da API (ex: /api/pulsos, /api/missionarios)
-│   ├── modelos/        ← estrutura das tabelas do banco de dados
-│   ├── autenticacao/   ← login e geração de token (JWT)
-│   └── servidor.js     ← arquivo principal que inicia a API
-├── package.json
-└── README.md
-```
-
-**5. Endpoints REST esperados (mínimo):**
-- `POST /api/auth/login` — autenticação, retorna token JWT
-- `GET /api/missionarios` — lista missionários (protegido por token)
-- `POST /api/pulsos` — registra resposta de um pulso
-- `GET /api/kpis` — retorna dados consolidados do dashboard
-
-Todas as respostas devem seguir um formato JSON padronizado, por exemplo:
-```json
-{ "sucesso": true, "dados": { ... }, "erro": null }
-```
-
-**6. No frontend (`src/App.jsx`)**, trocar os pontos onde os dados hoje ficam só em estado React por chamadas a essa API (usando `fetch` ou `axios`), mantendo a interface visual igual.
-
-**7. O frontend continua no Vercel.** Não é necessário mover nada do que já existe — só passa a "conversar" com a nova API em vez de manter tudo internamente.
-
-Essa separação (frontend no Vercel, backend em Railway/Render) é o motivo pelo qual o sistema foi desenhado com REST API prevista desde o início: a migração não exige reescrever a interface, só conectar as duas partes.
+1. Teste a mudança localmente e, se possível, contra o ambiente de staging (`INFRAESTRUTURA.md`)
+2. `git push` no branch `master` do repositório privado `avalie360-api`
+3. Entre no servidor via SSH (ver `INFRAESTRUTURA.md` para a chave/comando)
+4. `cd /var/www/avalie360-api && git pull`
+5. Se mudou alguma dependência: `npm install --omit=dev`
+6. Se mudou o schema do banco (`src/bancoDeDados/esquema.sql`): `npm run migrar`
+7. `pm2 restart avalie360-api`
+8. Confira com `pm2 logs avalie360-api` que subiu sem erro
 
 ## Decisões técnicas (registro)
 
-**Por que postergar o backend:** validar o modelo de pulsos com o piloto SEPAL antes de investir em infraestrutura de servidor e banco de dados — evita gastar esforço em algo que pode precisar de ajustes depois de feedback real.
-
 **Por que separar frontend e backend em repositórios distintos:** facilita manutenção independente — quem for tocar o backend não precisa entender React, e quem ajustar a interface não precisa entender o servidor.
 
-**Pontos mais frágeis para atenção futura:** a falta de persistência de dados é o maior risco atual — qualquer uso da SEPAL além de demonstração visual exige a Fase 2 implementada primeiro.
+**Por que VPS próprio (Contabo) em vez de Railway/Render:** custo fixo mensal em vez de cobrança por uso, e o usuário já tinha o servidor contratado para outro projeto (`conectandogente.com`), então reaproveitar evita gasto extra.
+
+**Pontos mais frágeis para atenção futura:** deploy do backend é manual (sem CI/CD) — um esquecimento de reiniciar o PM2 após um `git pull` deixa o servidor rodando código antigo sem nenhum aviso. Vale considerar automatizar isso (GitHub Actions + SSH, por exemplo) se as mudanças no backend ficarem mais frequentes.
