@@ -261,23 +261,23 @@ function AppHeader({ perfil, userTL, onHome, onSair }) {
     <div style={{
       background:C.surface, borderBottom:`1px solid ${C.border}`,
       padding:"14px 20px", display:"flex", alignItems:"center", justifyContent:"space-between",
-      position:"sticky", top:0, zIndex:100,
+      position:"sticky", top:0, zIndex:100, flexWrap:"wrap", rowGap:8, columnGap:10,
     }}>
-      <div onClick={onHome} style={{ display:"flex", alignItems:"center", gap:10, cursor:"pointer" }}>
+      <div onClick={onHome} style={{ display:"flex", alignItems:"center", gap:8, cursor:"pointer" }}>
         <div style={{
           height:34, borderRadius:10,
           background:"transparent",
           display:"flex", alignItems:"center", justifyContent:"center",
-        }}><img src={SEPAL_LOGO} style={{ width:52, height:"auto", objectFit:"contain" }}/></div>
-        <span style={{ fontWeight:700, fontSize:18, letterSpacing:-0.5 }}>
+        }}><img src={SEPAL_LOGO} style={{ width:44, height:"auto", objectFit:"contain" }}/></div>
+        <span style={{ fontWeight:700, fontSize:18, letterSpacing:-0.5, whiteSpace:"nowrap" }}>
           Avalie<span style={{ color:C.accent }}>360</span>
         </span>
       </div>
-      <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+      <div style={{ display:"flex", alignItems:"center", gap:8, flexWrap:"wrap", rowGap:6 }}>
         <div style={{
           background:C.card, border:`1px solid ${C.border}`,
-          borderRadius:20, padding:"4px 12px",
-          display:"flex", alignItems:"center", gap:6,
+          borderRadius:20, padding:"4px 10px",
+          display:"flex", alignItems:"center", gap:6, whiteSpace:"nowrap",
         }}>
           <span>{nv.icon}</span>
           <span style={{ fontSize:14, fontWeight:700, color:nv.cor }}>{userTL} TL</span>
@@ -288,7 +288,7 @@ function AppHeader({ perfil, userTL, onHome, onSair }) {
         {onSair && (
           <button onClick={onSair} title="Sair" style={{
             background:"none", border:`1px solid ${C.border}`, color:C.muted,
-            borderRadius:20, padding:"4px 12px", fontSize:14, cursor:"pointer", fontFamily:"inherit",
+            borderRadius:20, padding:"4px 10px", fontSize:14, cursor:"pointer", fontFamily:"inherit", whiteSpace:"nowrap",
           }}>Sair</button>
         )}
       </div>
