@@ -182,7 +182,7 @@ function Badge({ children, color }) {
   return (
     <span style={{
       background:color+"22", color, border:`1px solid ${color}44`,
-      borderRadius:20, padding:"2px 10px", fontSize:11, fontWeight:700, letterSpacing:0.5,
+      borderRadius:20, padding:"2px 10px", fontSize:14, fontWeight:700, letterSpacing:0.5,
     }}>{children}</span>
   );
 }
@@ -216,7 +216,7 @@ function EscalaInput({ value, onChange }) {
           }}>{n}</button>
         ))}
       </div>
-      {value && <span style={{ color:cores[value], fontSize:13, fontWeight:700 }}>{labels[value]}</span>}
+      {value && <span style={{ color:cores[value], fontSize:14, fontWeight:700 }}>{labels[value]}</span>}
     </div>
   );
 }
@@ -226,7 +226,7 @@ function BinariaInput({ value, onChange }) {
     <div style={{ display:"flex", gap:12 }}>
       {[["Sim",C.success,"👍"],["Não",C.danger,"👎"]].map(([op,cor,em])=>(
         <button key={op} onClick={()=>onChange(op)} style={{
-          padding:"12px 32px", borderRadius:12, cursor:"pointer", fontWeight:700, fontSize:15,
+          minHeight:48, padding:"12px 32px", borderRadius:12, cursor:"pointer", fontWeight:600, fontSize:16, boxSizing:"border-box",
           border:`2px solid ${value===op?cor:C.border}`,
           background:value===op?cor+"22":C.card, color:value===op?cor:C.muted,
           transform:value===op?"scale(1.05)":"scale(1)", transition:"all 0.15s",
@@ -249,7 +249,7 @@ function Toast({ tl }) {
       <span style={{ fontSize:28 }}>⚡</span>
       <div>
         <div style={{ color:"#fff", fontWeight:800, fontSize:16 }}>+{tl} Talentos!</div>
-        <div style={{ color:"#fff9", fontSize:12 }}>Sua contribuição foi registrada</div>
+        <div style={{ color:"#fff9", fontSize:14 }}>Sua contribuição foi registrada</div>
       </div>
     </div>
   );
@@ -260,7 +260,7 @@ function AppHeader({ perfil, userTL, onHome, onSair }) {
   return (
     <div style={{
       background:C.surface, borderBottom:`1px solid ${C.border}`,
-      padding:"14px 24px", display:"flex", alignItems:"center", justifyContent:"space-between",
+      padding:"14px 20px", display:"flex", alignItems:"center", justifyContent:"space-between",
       position:"sticky", top:0, zIndex:100,
     }}>
       <div onClick={onHome} style={{ display:"flex", alignItems:"center", gap:10, cursor:"pointer" }}>
@@ -280,7 +280,7 @@ function AppHeader({ perfil, userTL, onHome, onSair }) {
           display:"flex", alignItems:"center", gap:6,
         }}>
           <span>{nv.icon}</span>
-          <span style={{ fontSize:13, fontWeight:700, color:nv.cor }}>{userTL} TL</span>
+          <span style={{ fontSize:14, fontWeight:700, color:nv.cor }}>{userTL} TL</span>
         </div>
         <Badge color={perfil==="gestor"?C.accent:C.purple}>
           {perfil==="gestor"?"Gestor":"Missionário"}
@@ -288,7 +288,7 @@ function AppHeader({ perfil, userTL, onHome, onSair }) {
         {onSair && (
           <button onClick={onSair} title="Sair" style={{
             background:"none", border:`1px solid ${C.border}`, color:C.muted,
-            borderRadius:20, padding:"4px 12px", fontSize:12, cursor:"pointer", fontFamily:"inherit",
+            borderRadius:20, padding:"4px 12px", fontSize:14, cursor:"pointer", fontFamily:"inherit",
           }}>Sair</button>
         )}
       </div>
@@ -304,9 +304,9 @@ function Modal({ titulo, onClose, children }) {
       display:"flex", alignItems:"center", justifyContent:"center", padding:16,
     }} onClick={onClose}>
       <div onClick={e=>e.stopPropagation()} style={{
-        background:C.surface, borderRadius:20, padding:28,
+        background:C.surface, borderRadius:16, padding:20,
         border:`1px solid ${C.border}`, maxWidth:500, width:"100%",
-        maxHeight:"90vh", overflowY:"auto",
+        maxHeight:"90vh", overflowY:"auto", boxSizing:"border-box",
       }}>
         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:20 }}>
           <h3 style={{ margin:0, fontSize:18, fontWeight:700 }}>{titulo}</h3>
@@ -321,12 +321,13 @@ function Modal({ titulo, onClose, children }) {
 function Btn({ children, onClick, color=C.accent, outline, small, disabled }) {
   return (
     <button onClick={onClick} disabled={disabled} style={{
-      padding:small?"7px 14px":"10px 20px", borderRadius:10,
-      fontWeight:700, fontSize:small?12:14, cursor:disabled?"not-allowed":"pointer",
+      padding:small?"8px 16px":"12px 20px", borderRadius:12,
+      minHeight:small?40:48,
+      fontWeight:600, fontSize:small?14:16, cursor:disabled?"not-allowed":"pointer",
       fontFamily:"inherit", transition:"opacity 0.15s", opacity:disabled?0.5:1,
       border:outline?`1px solid ${color}`:"none",
       background:outline?color+"18":`linear-gradient(135deg,${color},${color}CC)`,
-      color:outline?color:"#fff",
+      color:outline?color:"#fff", boxSizing:"border-box",
     }}>{children}</button>
   );
 }
@@ -334,9 +335,9 @@ function Btn({ children, onClick, color=C.accent, outline, small, disabled }) {
 function FieldInput({ label, value, onChange, type="text", disabled, placeholder }) {
   return (
     <div style={{ marginBottom:14 }}>
-      <label style={{ display:"block", color:C.muted, fontSize:12, marginBottom:5 }}>{label}</label>
+      <label style={{ display:"block", color:C.muted, fontSize:14, marginBottom:5 }}>{label}</label>
       <input type={type} value={value} onChange={onChange} disabled={disabled} placeholder={placeholder} style={{
-        width:"100%", padding:"10px 14px", borderRadius:10, fontSize:14, fontFamily:"inherit",
+        width:"100%", height:48, padding:"0 14px", borderRadius:12, fontSize:16, fontFamily:"inherit",
         background:disabled?C.bg:C.surface, border:`1px solid ${C.border}`,
         color:disabled?C.muted:C.text, boxSizing:"border-box",
         cursor:disabled?"not-allowed":"text",
@@ -348,9 +349,9 @@ function FieldInput({ label, value, onChange, type="text", disabled, placeholder
 function FieldSelect({ label, value, onChange, options, disabled }) {
   return (
     <div style={{ marginBottom:14 }}>
-      <label style={{ display:"block", color:C.muted, fontSize:12, marginBottom:5 }}>{label}</label>
+      <label style={{ display:"block", color:C.muted, fontSize:14, marginBottom:5 }}>{label}</label>
       <select value={value} onChange={onChange} disabled={disabled} style={{
-        width:"100%", padding:"10px 14px", borderRadius:10, fontSize:14, fontFamily:"inherit",
+        width:"100%", height:48, padding:"0 14px", borderRadius:12, fontSize:16, fontFamily:"inherit",
         background:disabled?C.bg:C.surface, border:`1px solid ${C.border}`,
         color:C.text, boxSizing:"border-box", cursor:disabled?"not-allowed":"pointer",
       }}>
@@ -385,30 +386,30 @@ function Login({ onLogin }) {
 
   return (
     <div style={{
-      minHeight:"100vh", background:C.bg, fontFamily:"'Georgia',serif",
+      minHeight:"100vh", background:C.bg, fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif",
       display:"flex", alignItems:"center", justifyContent:"center",
     }}>
-      <div style={{ textAlign:"center", maxWidth:420, padding:32, width:"100%" }}>
+      <div style={{ textAlign:"center", maxWidth:420, padding:"32px 20px", width:"100%", boxSizing:"border-box" }}>
         <img src={SEPAL_LOGO} style={{ width:160, height:"auto", objectFit:"contain", marginBottom:16, display:"block", margin:"0 auto 16px" }}/>
         <h1 style={{ color:C.text, fontSize:22, fontWeight:700, margin:"0 0 6px", letterSpacing:-0.5 }}>
           Avalie<span style={{ color:C.accent }}>360</span>
         </h1>
-        <p style={{ color:C.text, marginBottom:4, fontSize:15, fontWeight:400 }}>Medindo Nosso Pulso Organizacional</p>
-        <p style={{ color:C.text, fontSize:15, marginBottom:28, fontWeight:400 }}>Sua voz transforma a missão ✦</p>
+        <p style={{ color:C.text, marginBottom:4, fontSize:16, fontWeight:400 }}>Medindo Nosso Pulso Organizacional</p>
+        <p style={{ color:C.text, fontSize:16, marginBottom:28, fontWeight:400 }}>Sua voz transforma a missão ✦</p>
         <form onSubmit={entrar} style={{ display:"flex", flexDirection:"column", gap:12, textAlign:"left" }}>
           <FieldInput label="Email (@sepal.org.br)" value={email} onChange={e=>setEmail(e.target.value)} type="email" placeholder="voce@sepal.org.br"/>
           <FieldInput label="Senha" value={senha} onChange={e=>setSenha(e.target.value)} type="password" placeholder="••••••••"/>
-          {erro && <p style={{ color:C.danger, fontSize:13, margin:0 }}>{erro}</p>}
+          {erro && <p style={{ color:C.danger, fontSize:14, margin:0 }}>{erro}</p>}
           <button type="submit" disabled={carregando} style={{
-            padding:"15px 0", borderRadius:14, cursor:carregando?"default":"pointer", fontSize:16,
-            fontWeight:700, marginTop:6,
+            minHeight:48, padding:"15px 0", borderRadius:12, cursor:carregando?"default":"pointer", fontSize:16,
+            fontWeight:600, marginTop:6, boxSizing:"border-box",
             background:`linear-gradient(135deg,${C.accent},#EA580C)`,
             color:"#fff", border:"none",
             boxShadow:`0 4px 24px ${C.accent}50`,
             opacity:carregando?0.7:1,
           }}>{carregando?"Entrando...":"Entrar"}</button>
         </form>
-        <p style={{ color:C.muted, fontSize:12, marginTop:28 }}>Protótipo SEPAL · Avalie360 v0.4</p>
+        <p style={{ color:C.muted, fontSize:14, marginTop:28 }}>Protótipo SEPAL · Avalie360 v0.4</p>
       </div>
     </div>
   );
@@ -434,17 +435,17 @@ function Dashboard({ perfil, userTL, ciclosCompletos, posicaoRanking, conquistas
   ];
 
   return (
-    <div style={{ fontFamily:"'Georgia',serif", background:C.bg, minHeight:"100vh", color:C.text }}>
+    <div style={{ fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif", background:C.bg, minHeight:"100vh", color:C.text }}>
       <AppHeader perfil={perfil} userTL={userTL} onHome={()=>setTab("inicio")} onSair={onSair} />
 
       {erroApi && (
         <div style={{
           background:`${C.danger}18`, borderBottom:`1px solid ${C.danger}50`,
-          color:C.danger, fontSize:13, padding:"8px 24px",
+          color:C.danger, fontSize:14, padding:"8px 24px",
         }}>⚠ {erroApi} (exibindo dados de demonstração)</div>
       )}
 
-      <div style={{ background:C.surface, borderBottom:`1px solid ${C.border}`, display:"flex", padding:"0 24px", gap:4, overflowX:"auto" }}>
+      <div style={{ background:C.surface, borderBottom:`1px solid ${C.border}`, display:"flex", padding:"0 20px", gap:4, overflowX:"auto" }}>
         {TABS.map(t=>(
           <button key={t.id} onClick={()=>t.id==="missionarios"?onMissionarios():setTab(t.id)} style={{
             padding:"12px 16px", background:"none", fontWeight:600, fontSize:14, cursor:"pointer",
@@ -455,13 +456,13 @@ function Dashboard({ perfil, userTL, ciclosCompletos, posicaoRanking, conquistas
         ))}
       </div>
 
-      <div style={{ maxWidth:860, margin:"0 auto", padding:"24px 18px" }}>
+      <div style={{ maxWidth:860, margin:"0 auto", padding:"24px 20px", boxSizing:"border-box" }}>
 
         {/* INÍCIO */}
         {tab==="inicio" && <>
           {!isGestor && (
             <div style={{
-              background:C.card, borderRadius:20, padding:22, marginBottom:20,
+              background:C.card, borderRadius:16, padding:20, marginBottom:20,
               border:`1px solid ${nv.cor}40`,
               backgroundImage:`radial-gradient(ellipse at 90% 10%,${nv.cor}10,transparent 60%)`,
             }}>
@@ -475,16 +476,16 @@ function Dashboard({ perfil, userTL, ciclosCompletos, posicaoRanking, conquistas
                 <div style={{ flex:1 }}>
                   <div style={{ display:"flex", justifyContent:"space-between" }}>
                     <div>
-                      <div style={{ fontSize:11, color:C.muted, letterSpacing:1, textTransform:"uppercase" }}>Seu nível</div>
+                      <div style={{ fontSize:14, color:C.muted, letterSpacing:1, textTransform:"uppercase" }}>Seu nível</div>
                       <div style={{ fontWeight:800, fontSize:18, color:nv.cor }}>{nv.nome}</div>
                     </div>
                     <div style={{ textAlign:"right" }}>
                       <span style={{ fontSize:20, fontWeight:900 }}>{userTL}</span>
-                      <span style={{ color:C.muted, fontSize:13 }}> / {prx.min} TL</span>
+                      <span style={{ color:C.muted, fontSize:14 }}> / {prx.min} TL</span>
                     </div>
                   </div>
                   <div style={{ marginTop:8 }}><Barra valor={userTL} max={prx.min} cor={nv.cor}/></div>
-                  <div style={{ color:C.muted, fontSize:12, marginTop:4 }}>{prx.min-userTL} Talentos para {prx.nome}</div>
+                  <div style={{ color:C.muted, fontSize:14, marginTop:4 }}>{prx.min-userTL} Talentos para {prx.nome}</div>
                 </div>
               </div>
               <div style={{ display:"flex", gap:8, flexWrap:"wrap" }}>
@@ -492,14 +493,14 @@ function Dashboard({ perfil, userTL, ciclosCompletos, posicaoRanking, conquistas
                   <div key={c.id} style={{
                     background:C.bg, border:`1px solid ${C.border}`,
                     borderRadius:10, padding:"5px 10px",
-                    display:"flex", alignItems:"center", gap:5, fontSize:12,
+                    display:"flex", alignItems:"center", gap:5, fontSize:14,
                   }}><span>{c.icon}</span><span style={{ fontWeight:600 }}>{c.nome}</span></div>
                 ))}
                 {conquistas.filter(c=>!c.on).slice(0,2).map(c=>(
                   <div key={c.id} style={{
                     background:C.bg, border:`1px solid ${C.border}`,
                     borderRadius:10, padding:"5px 10px",
-                    display:"flex", alignItems:"center", gap:5, fontSize:12,
+                    display:"flex", alignItems:"center", gap:5, fontSize:14,
                     opacity:0.35, filter:"grayscale(1)",
                   }}><span>🔒</span><span style={{ color:C.muted }}>???</span></div>
                 ))}
@@ -507,11 +508,11 @@ function Dashboard({ perfil, userTL, ciclosCompletos, posicaoRanking, conquistas
             </div>
           )}
 
-          <h3 style={{ color:C.muted, fontSize:11, letterSpacing:2, textTransform:"uppercase", margin:"0 0 12px" }}>Ciclos disponíveis</h3>
+          <h3 style={{ color:C.muted, fontSize:14, letterSpacing:2, textTransform:"uppercase", margin:"0 0 12px" }}>Ciclos disponíveis</h3>
           <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(250px,1fr))", gap:12, marginBottom:24 }}>
             {CICLOS.map(c=>(
               <div key={c.id} onClick={()=>onAvaliar(c.id)} style={{
-                background:C.card, borderRadius:18, padding:20, cursor:"pointer",
+                background:C.card, borderRadius:16, padding:20, cursor:"pointer",
                 border:`1px solid ${C.border}`, transition:"all 0.2s",
               }}
                 onMouseEnter={e=>{e.currentTarget.style.borderColor=C.accent;e.currentTarget.style.transform="translateY(-2px)";}}
@@ -519,7 +520,7 @@ function Dashboard({ perfil, userTL, ciclosCompletos, posicaoRanking, conquistas
               >
                 <div style={{ fontSize:30, marginBottom:10 }}>{c.icon}</div>
                 <h4 style={{ margin:"0 0 4px", fontSize:16, fontWeight:700 }}>{c.label}</h4>
-                <p style={{ color:C.muted, fontSize:13, margin:"0 0 14px", lineHeight:1.5 }}>{c.desc}</p>
+                <p style={{ color:C.muted, fontSize:14, margin:"0 0 14px", lineHeight:1.5 }}>{c.desc}</p>
                 <div style={{ display:"flex", gap:8, flexWrap:"wrap" }}>
                   <Badge color={C.accent}>{c.freq}</Badge>
                   <Badge color={C.purple}>{c.tempo}</Badge>
@@ -530,10 +531,10 @@ function Dashboard({ perfil, userTL, ciclosCompletos, posicaoRanking, conquistas
           </div>
 
           {!isGestor && (
-            <div style={{ background:C.card, borderRadius:18, padding:20, border:`1px solid ${C.border}` }}>
+            <div style={{ background:C.card, borderRadius:16, padding:20, border:`1px solid ${C.border}` }}>
               <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:14 }}>
-                <span style={{ fontWeight:700, fontSize:15 }}>🏆 Sua posição</span>
-                <button onClick={()=>setTab("ranking")} style={{ background:"none", border:"none", color:C.accent, cursor:"pointer", fontSize:13, fontWeight:600 }}>Ver ranking →</button>
+                <span style={{ fontWeight:700, fontSize:16 }}>🏆 Sua posição</span>
+                <button onClick={()=>setTab("ranking")} style={{ background:"none", border:"none", color:C.accent, cursor:"pointer", fontSize:14, fontWeight:600 }}>Ver ranking →</button>
               </div>
               <div style={{
                 background:`${C.accent}15`, border:`1px solid ${C.accent}40`,
@@ -545,7 +546,7 @@ function Dashboard({ perfil, userTL, ciclosCompletos, posicaoRanking, conquistas
                 </span>
                 <div>
                   <div style={{ fontWeight:700 }}>Você · {userTL} TL</div>
-                  <div style={{ color:C.muted, fontSize:13 }}>
+                  <div style={{ color:C.muted, fontSize:14 }}>
                     {ciclosCompletos} avaliaç{ciclosCompletos===1?"ão":"ões"}
                     {!posicaoRanking && " · fora do Top 5"}
                   </div>
@@ -555,10 +556,10 @@ function Dashboard({ perfil, userTL, ciclosCompletos, posicaoRanking, conquistas
           )}
 
           {isGestor && <>
-            <h3 style={{ color:C.muted, fontSize:11, letterSpacing:2, textTransform:"uppercase", margin:"24px 0 12px" }}>
+            <h3 style={{ color:C.muted, fontSize:14, letterSpacing:2, textTransform:"uppercase", margin:"24px 0 12px" }}>
               Resultados · Pulso de Área · T1 2026
             </h3>
-            <div style={{ background:C.card, borderRadius:18, padding:22, border:`1px solid ${C.border}`, marginBottom:12 }}>
+            <div style={{ background:C.card, borderRadius:16, padding:20, border:`1px solid ${C.border}`, marginBottom:12 }}>
               {AREAS.map(a=>(
                 <div key={a.id} style={{ marginBottom:14 }}>
                   <div style={{ display:"flex", justifyContent:"space-between", marginBottom:5 }}>
@@ -572,9 +573,9 @@ function Dashboard({ perfil, userTL, ciclosCompletos, posicaoRanking, conquistas
               ))}
             </div>
             <button onClick={()=>setTab("resultados")} style={{
-              width:"100%", padding:"13px 0", borderRadius:12, background:C.surface,
+              width:"100%", minHeight:48, padding:"13px 0", borderRadius:12, background:C.surface,
               color:C.text, border:`1px solid ${C.border}`, cursor:"pointer",
-              fontWeight:600, fontSize:14, fontFamily:"inherit",
+              fontWeight:600, fontSize:16, fontFamily:"inherit", boxSizing:"border-box",
             }}>Ver análise completa →</button>
           </>}
         </>}
@@ -593,7 +594,7 @@ function PerfilTab({ userTL, isGestor, nv, prx, ciclosCompletos, posicaoRanking,
   return (
     <div>
       <div style={{
-        background:C.card, borderRadius:20, padding:28, marginBottom:16,
+        background:C.card, borderRadius:16, padding:20, marginBottom:16,
         border:`1px solid ${nv.cor}40`,
         backgroundImage:`radial-gradient(ellipse at 80% 0%,${nv.cor}12,transparent 50%)`,
       }}>
@@ -607,25 +608,25 @@ function PerfilTab({ userTL, isGestor, nv, prx, ciclosCompletos, posicaoRanking,
           <div>
             <div style={{ fontWeight:800, fontSize:20 }}>{isGestor?"Coordenador":"Você"}</div>
             <div style={{ color:nv.cor, fontWeight:700 }}>{nv.icon} {nv.nome}</div>
-            <div style={{ color:C.muted, fontSize:13 }}>Membro desde Janeiro 2025</div>
+            <div style={{ color:C.muted, fontSize:14 }}>Membro desde Janeiro 2025</div>
           </div>
         </div>
         <div style={{ display:"flex", gap:12, marginBottom:16 }}>
           {[["TL Total",userTL,C.accent],["Avaliações",ciclosCompletos,C.success],["Posição",posicaoRanking?`#${posicaoRanking}`:"—",C.gold]].map(([label,val,cor])=>(
             <div key={label} style={{ flex:1, background:C.bg, borderRadius:12, padding:"12px 0", textAlign:"center", border:`1px solid ${C.border}` }}>
               <div style={{ fontSize:22, fontWeight:900, color:cor }}>{val}</div>
-              <div style={{ color:C.muted, fontSize:12 }}>{label}</div>
+              <div style={{ color:C.muted, fontSize:14 }}>{label}</div>
             </div>
           ))}
         </div>
         <div style={{ display:"flex", justifyContent:"space-between", marginBottom:6 }}>
-          <span style={{ color:C.muted, fontSize:13 }}>Progresso para {prx.nome}</span>
-          <span style={{ color:nv.cor, fontWeight:700, fontSize:13 }}>{userTL}/{prx.min} TL</span>
+          <span style={{ color:C.muted, fontSize:14 }}>Progresso para {prx.nome}</span>
+          <span style={{ color:nv.cor, fontWeight:700, fontSize:14 }}>{userTL}/{prx.min} TL</span>
         </div>
         <Barra valor={userTL} max={prx.min} cor={nv.cor}/>
       </div>
 
-      <h3 style={{ color:C.muted, fontSize:11, letterSpacing:2, textTransform:"uppercase", margin:"0 0 12px" }}>Conquistas</h3>
+      <h3 style={{ color:C.muted, fontSize:14, letterSpacing:2, textTransform:"uppercase", margin:"0 0 12px" }}>Conquistas</h3>
       <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(175px,1fr))", gap:10, marginBottom:20 }}>
         {conquistas.map(c=>(
           <div key={c.id} style={{
@@ -635,13 +636,13 @@ function PerfilTab({ userTL, isGestor, nv, prx, ciclosCompletos, posicaoRanking,
           }}>
             <div style={{ fontSize:28, marginBottom:6 }}>{c.on?c.icon:"🔒"}</div>
             <div style={{ fontWeight:700, fontSize:14, marginBottom:3 }}>{c.nome}</div>
-            <div style={{ color:C.muted, fontSize:12, lineHeight:1.4 }}>{c.desc}</div>
-            {!c.on && <div style={{ color:C.accent, fontSize:11, marginTop:6, fontWeight:600 }}>{c.tlMin} TL para desbloquear</div>}
+            <div style={{ color:C.muted, fontSize:14, lineHeight:1.4 }}>{c.desc}</div>
+            {!c.on && <div style={{ color:C.accent, fontSize:14, marginTop:6, fontWeight:600 }}>{c.tlMin} TL para desbloquear</div>}
           </div>
         ))}
       </div>
 
-      <h3 style={{ color:C.muted, fontSize:11, letterSpacing:2, textTransform:"uppercase", margin:"0 0 12px" }}>Histórico</h3>
+      <h3 style={{ color:C.muted, fontSize:14, letterSpacing:2, textTransform:"uppercase", margin:"0 0 12px" }}>Histórico</h3>
       <div style={{ background:C.card, borderRadius:16, border:`1px solid ${C.border}`, overflow:"hidden" }}>
         {HISTORICO.map((h,i)=>(
           <div key={i} style={{
@@ -651,7 +652,7 @@ function PerfilTab({ userTL, isGestor, nv, prx, ciclosCompletos, posicaoRanking,
             <span style={{ fontSize:22 }}>{h.icon}</span>
             <div style={{ flex:1 }}>
               <div style={{ fontWeight:600, fontSize:14 }}>{h.ciclo}</div>
-              <div style={{ color:C.muted, fontSize:12 }}>{h.objeto} · {h.data}</div>
+              <div style={{ color:C.muted, fontSize:14 }}>{h.objeto} · {h.data}</div>
             </div>
             <Badge color={C.gold}>+{h.tl} TL</Badge>
           </div>
@@ -690,9 +691,9 @@ function RankingTab({ ranking }) {
           }}>
             <div style={{ fontSize:28 }}>{medals[r.pos-1]}</div>
             <div style={{ fontSize:24 }}>{r.avatar}</div>
-            <div style={{ fontWeight:700, fontSize:13, marginTop:6 }}>{r.nome}</div>
+            <div style={{ fontWeight:700, fontSize:14, marginTop:6 }}>{r.nome}</div>
             <div style={{ color:medalCores[r.pos-1], fontWeight:800, fontSize:16 }}>{r.tl} TL</div>
-            <div style={{ color:C.muted, fontSize:12 }}>{r.ciclos} avaliações</div>
+            <div style={{ color:C.muted, fontSize:14 }}>{r.ciclos} avaliações</div>
           </div>
         ))}
       </div>
@@ -714,22 +715,22 @@ function RankingTab({ ranking }) {
             <div style={{ flex:1 }}>
               <span style={{ fontWeight:r.eu?800:600, color:r.eu?C.accent:C.text }}>{r.nome}</span>
               {r.eu && <span style={{ marginLeft:8 }}><Badge color={C.accent}>Você</Badge></span>}
-              <div style={{ color:C.muted, fontSize:12 }}>{r.ciclos} avaliações</div>
+              <div style={{ color:C.muted, fontSize:14 }}>{r.ciclos} avaliações</div>
             </div>
             <div style={{ textAlign:"right" }}>
               <div style={{ fontWeight:800, fontSize:16 }}>{r.tl} TL</div>
-              <div style={{ fontSize:13, color:r.tend==="↑"?C.success:r.tend==="↓"?C.danger:C.muted }}>{r.tend}</div>
+              <div style={{ fontSize:14, color:r.tend==="↑"?C.success:r.tend==="↓"?C.danger:C.muted }}>{r.tend}</div>
             </div>
           </div>
         ))}
       </div>
-      <div style={{ background:C.card, borderRadius:16, padding:18, border:`1px solid ${C.gold}30` }}>
+      <div style={{ background:C.card, borderRadius:16, padding:20, border:`1px solid ${C.gold}30` }}>
         <div style={{ fontWeight:700, marginBottom:10, color:C.gold }}>🌟 Destaque do trimestre</div>
         <div style={{ display:"flex", alignItems:"center", gap:12 }}>
           <span style={{ fontSize:32 }}>👩‍💼</span>
           <div>
             <div style={{ fontWeight:700 }}>Ana Souza</div>
-            <div style={{ color:C.muted, fontSize:13 }}>Participou de todos os ciclos com qualidade excepcional. A liderança agradece sua contribuição!</div>
+            <div style={{ color:C.muted, fontSize:14 }}>Participou de todos os ciclos com qualidade excepcional. A liderança agradece sua contribuição!</div>
           </div>
         </div>
       </div>
@@ -743,7 +744,7 @@ function ResultadosTab({ media }) {
     <div>
       <div style={{
         background:`linear-gradient(135deg,${C.accent}18,${C.purple}18)`,
-        borderRadius:20, padding:24, border:`1px solid ${C.accent}30`,
+        borderRadius:16, padding:20, border:`1px solid ${C.accent}30`,
         marginBottom:16, display:"flex", alignItems:"center", gap:20,
       }}>
         <div style={{
@@ -753,8 +754,8 @@ function ResultadosTab({ media }) {
           boxShadow:`0 0 30px ${C.accent}50`,
         }}>{media.toFixed(1)}</div>
         <div>
-          <div style={{ fontSize:20, fontWeight:700 }}>Saúde Organizacional</div>
-          <div style={{ color:C.muted, fontSize:13, marginTop:3 }}>Média das 7 áreas · 34 respondentes · T1 2026</div>
+          <div style={{ fontSize:18, fontWeight:700 }}>Saúde Organizacional</div>
+          <div style={{ color:C.muted, fontSize:14, marginTop:3 }}>Média das 7 áreas · 34 respondentes · T1 2026</div>
           <div style={{ marginTop:8 }}><Badge color={C.success}>↑ +0.3 vs T4 2025</Badge></div>
         </div>
       </div>
@@ -763,13 +764,13 @@ function ResultadosTab({ media }) {
           const val = SCORES[a.id];
           const [status,cor] = val>=4.5?["Excelente",C.success]:val>=4?["Bom",C.accent]:val>=3.5?["Regular",C.warning]:["Atenção",C.danger];
           return (
-            <div key={a.id} style={{ background:C.card, borderRadius:14, padding:16, border:`1px solid ${C.border}` }}>
+            <div key={a.id} style={{ background:C.card, borderRadius:16, padding:16, border:`1px solid ${C.border}` }}>
               <div style={{ display:"flex", justifyContent:"space-between", marginBottom:8 }}>
                 <span style={{ fontSize:18 }}>{a.icon}</span><Badge color={cor}>{status}</Badge>
               </div>
               <div style={{ fontWeight:700, fontSize:14, marginBottom:4 }}>{a.nome}</div>
               <div style={{ fontSize:26, fontWeight:900, color:a.cor, margin:"4px 0" }}>
-                {val.toFixed(1)}<span style={{ fontSize:13, color:C.muted, fontWeight:400 }}>/5</span>
+                {val.toFixed(1)}<span style={{ fontSize:14, color:C.muted, fontWeight:400 }}>/5</span>
               </div>
               <Barra valor={val} max={5} cor={a.cor}/>
             </div>
@@ -777,15 +778,15 @@ function ResultadosTab({ media }) {
         })}
       </div>
       <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10 }}>
-        <div style={{ background:C.card, borderRadius:14, padding:16, border:`1px solid ${C.success}30` }}>
+        <div style={{ background:C.card, borderRadius:16, padding:20, border:`1px solid ${C.success}30` }}>
           <div style={{ color:C.success, fontWeight:700, marginBottom:8 }}>✅ Pontos fortes</div>
-          <ul style={{ margin:0, paddingLeft:18, color:C.muted, fontSize:13, lineHeight:1.9 }}>
+          <ul style={{ margin:0, paddingLeft:18, color:C.muted, fontSize:14, lineHeight:1.9 }}>
             <li>Estratégia & Missão (4.7)</li><li>Comunicação (4.5)</li><li>Financeiro (4.2)</li>
           </ul>
         </div>
-        <div style={{ background:C.card, borderRadius:14, padding:16, border:`1px solid ${C.danger}30` }}>
+        <div style={{ background:C.card, borderRadius:16, padding:20, border:`1px solid ${C.danger}30` }}>
           <div style={{ color:C.danger, fontWeight:700, marginBottom:8 }}>⚠️ Atenção imediata</div>
-          <ul style={{ margin:0, paddingLeft:18, color:C.muted, fontSize:13, lineHeight:1.9 }}>
+          <ul style={{ margin:0, paddingLeft:18, color:C.muted, fontSize:14, lineHeight:1.9 }}>
             <li>RH (3.2) — maior lacuna</li><li>Cuidado Missionário (3.8)</li>
           </ul>
         </div>
@@ -896,25 +897,25 @@ function KPIsTab({ missionarios, dadosFinanceiros, kpisApi }) {
     <div>
       {/* Título */}
       <div style={{ marginBottom:20 }}>
-        <h2 style={{ fontSize:20, fontWeight:700, margin:"0 0 4px" }}>📈 Painel de KPIs — Diretor Executivo</h2>
-        <p style={{ color:C.muted, fontSize:13, margin:0 }}>Consolidação automática dos 10 indicadores estratégicos</p>
+        <h2 style={{ fontSize:22, fontWeight:700, margin:"0 0 4px" }}>📈 Painel de KPIs — Diretor Executivo</h2>
+        <p style={{ color:C.muted, fontSize:14, margin:0 }}>Consolidação automática dos 10 indicadores estratégicos</p>
       </div>
 
       {/* Dados ao vivo da API de pulsos */}
       {kpisApi && (
         <div style={{
-          background:C.card, borderRadius:16, padding:18, marginBottom:20,
+          background:C.card, borderRadius:16, padding:20, marginBottom:20,
           border:`1px solid ${C.purple}40`,
         }}>
           <div style={{ fontWeight:700, fontSize:14, marginBottom:10 }}>📡 Pulsos respondidos (dados ao vivo da API)</div>
           <div style={{ display:"flex", gap:12, marginBottom:kpisApi.mediaPorArea?.length?14:0, flexWrap:"wrap" }}>
             <div style={{ background:C.bg, borderRadius:10, padding:"10px 16px", border:`1px solid ${C.border}`, flex:1, minWidth:120, textAlign:"center" }}>
               <div style={{ fontSize:18, fontWeight:800, color:C.purple }}>{kpisApi.totalPulsosRespondidos}</div>
-              <div style={{ color:C.muted, fontSize:12 }}>Envios registrados</div>
+              <div style={{ color:C.muted, fontSize:14 }}>Envios registrados</div>
             </div>
             <div style={{ background:C.bg, borderRadius:10, padding:"10px 16px", border:`1px solid ${C.border}`, flex:1, minWidth:120, textAlign:"center" }}>
               <div style={{ fontSize:18, fontWeight:800, color:C.accent }}>{kpisApi.missionariosAtivos}/{kpisApi.totalMissionarios}</div>
-              <div style={{ color:C.muted, fontSize:12 }}>Missionários ativos</div>
+              <div style={{ color:C.muted, fontSize:14 }}>Missionários ativos</div>
             </div>
           </div>
           {kpisApi.mediaPorArea?.length > 0 && (() => {
@@ -927,14 +928,14 @@ function KPIsTab({ missionarios, dadosFinanceiros, kpisApi }) {
               const ciclo = CICLOS.find(c => c.id === cicloId);
               return (
                 <div key={cicloId} style={{ marginBottom:12 }}>
-                  <div style={{ color:C.muted, fontSize:11, letterSpacing:1, textTransform:"uppercase", marginBottom:6 }}>
+                  <div style={{ color:C.muted, fontSize:14, letterSpacing:1, textTransform:"uppercase", marginBottom:6 }}>
                     {ciclo ? `${ciclo.icon} ${ciclo.label}` : cicloId}
                   </div>
                   <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
                     {linhas.map(a => {
                       const areaInfo = cicloId === "area" ? AREAS.find(ar => ar.id === a.area) : null;
                       return (
-                        <div key={`${a.ciclo}-${a.area}`} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", fontSize:13 }}>
+                        <div key={`${a.ciclo}-${a.area}`} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", fontSize:14 }}>
                           <span>{areaInfo ? `${areaInfo.icon} ${areaInfo.nome}` : a.area} <span style={{ color:C.muted }}>({a.total_respostas} resp.)</span></span>
                           <strong style={{ color:C.purple }}>{a.media}/5</strong>
                         </div>
@@ -950,20 +951,20 @@ function KPIsTab({ missionarios, dadosFinanceiros, kpisApi }) {
 
       {/* Upload financeiro */}
       <div style={{
-        background:C.card, borderRadius:16, padding:18, marginBottom:20,
+        background:C.card, borderRadius:16, padding:20, marginBottom:20,
         border:`1px solid ${C.border}`,
       }}>
         <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", flexWrap:"wrap", gap:10 }}>
           <div>
             <div style={{ fontWeight:700, fontSize:14, marginBottom:3 }}>💰 Relatório Financeiro Mensal</div>
-            <div style={{ color:C.muted, fontSize:12 }}>
+            <div style={{ color:C.muted, fontSize:14 }}>
               CSV com colunas: <code style={{ color:C.accent }}>descrição, orçado, realizado</code>
               {" · "}Marque atividade-fim com "missao" na descrição
             </div>
           </div>
           <div style={{ display:"flex", gap:8, alignItems:"center" }}>
             {csvOk && <Badge color={C.success}>✓ {fins.length} linhas importadas</Badge>}
-            {csvErro && <span style={{ color:C.danger, fontSize:12 }}>{csvErro}</span>}
+            {csvErro && <span style={{ color:C.danger, fontSize:14 }}>{csvErro}</span>}
             <Btn small onClick={() => { setCsvOk(false); fileRef.current.click(); }}>
               📥 {fins.length ? "Atualizar" : "Importar CSV"}
             </Btn>
@@ -985,7 +986,7 @@ function KPIsTab({ missionarios, dadosFinanceiros, kpisApi }) {
                 border:`1px solid ${C.border}`, flex:1, minWidth:100, textAlign:"center",
               }}>
                 <div style={{ fontSize:16, fontWeight:800, color:cor }}>{val}</div>
-                <div style={{ color:C.muted, fontSize:11 }}>{label}</div>
+                <div style={{ color:C.muted, fontSize:14 }}>{label}</div>
               </div>
             ))}
           </div>
@@ -995,7 +996,7 @@ function KPIsTab({ missionarios, dadosFinanceiros, kpisApi }) {
       {/* KPIs por dimensão */}
       {KPIS.map(dim => (
         <div key={dim.dim} style={{ marginBottom:16 }}>
-          <div style={{ color:C.muted, fontSize:11, letterSpacing:1.5, textTransform:"uppercase", marginBottom:10 }}>
+          <div style={{ color:C.muted, fontSize:14, letterSpacing:1.5, textTransform:"uppercase", marginBottom:10 }}>
             {dim.dim}
           </div>
           <div style={{ background:C.card, borderRadius:16, border:`1px solid ${C.border}`, overflow:"hidden" }}>
@@ -1006,7 +1007,7 @@ function KPIsTab({ missionarios, dadosFinanceiros, kpisApi }) {
               }}>
                 {/* Número */}
                 <div style={{
-                  width:28, height:28, borderRadius:"50%", fontSize:12, fontWeight:800,
+                  width:28, height:28, borderRadius:"50%", fontSize:14, fontWeight:800,
                   background: kpi.status.cor + "22", color: kpi.status.cor,
                   display:"flex", alignItems:"center", justifyContent:"center",
                   border:`1px solid ${kpi.status.cor}44`, flexShrink:0,
@@ -1015,7 +1016,7 @@ function KPIsTab({ missionarios, dadosFinanceiros, kpisApi }) {
                 {/* Nome e fonte */}
                 <div style={{ flex:1 }}>
                   <div style={{ fontWeight:600, fontSize:14 }}>{kpi.nome}</div>
-                  <div style={{ color:C.muted, fontSize:11, marginTop:2 }}>
+                  <div style={{ color:C.muted, fontSize:14, marginTop:2 }}>
                     Fonte: {kpi.fonte} · Meta: {kpi.meta}
                   </div>
                 </div>
@@ -1034,7 +1035,7 @@ function KPIsTab({ missionarios, dadosFinanceiros, kpisApi }) {
                         fontFamily:"inherit",
                       }}
                     />
-                    <span style={{ color:C.muted, fontSize:13 }}>{kpi.num===4 ? "%" : "proj."}</span>
+                    <span style={{ color:C.muted, fontSize:14 }}>{kpi.num===4 ? "%" : "proj."}</span>
                   </div>
                 ) : (
                   <div style={{ fontWeight:800, fontSize:18, color: kpi.status.cor, minWidth:60, textAlign:"right" }}>
@@ -1052,7 +1053,7 @@ function KPIsTab({ missionarios, dadosFinanceiros, kpisApi }) {
         </div>
       ))}
 
-      <div style={{ color:C.muted, fontSize:12, textAlign:"center", marginTop:8 }}>
+      <div style={{ color:C.muted, fontSize:14, textAlign:"center", marginTop:8 }}>
         KPIs 1, 2 — calculados do cadastro · KPIs 3, 6, 7, 8 — calculados dos Pulsos · KPIs 4, 5 — inserção manual · KPIs 9, 10 — relatório financeiro
       </div>
     </div>
@@ -1118,25 +1119,25 @@ function Avaliacao({ cicloId, perfil, userTL, token, usuario, missionarios, onVo
   }
 
   const headerBack = (
-    <div style={{ background:C.surface, borderBottom:`1px solid ${C.border}`, padding:"15px 22px", display:"flex", alignItems:"center", gap:14 }}>
+    <div style={{ background:C.surface, borderBottom:`1px solid ${C.border}`, padding:"15px 20px", display:"flex", alignItems:"center", gap:14 }}>
       <button onClick={onVoltar} style={{ background:"none", border:"none", color:C.muted, cursor:"pointer", fontSize:22 }}>←</button>
       <span style={{ fontWeight:700 }}>{ciclo.icon} {ciclo.label}</span>
     </div>
   );
 
   if (etapa==="selecao") return (
-    <div style={{ fontFamily:"'Georgia',serif", background:C.bg, minHeight:"100vh", color:C.text }}>
+    <div style={{ fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif", background:C.bg, minHeight:"100vh", color:C.text }}>
       <AppHeader perfil={perfil} userTL={userTL} onHome={onVoltar}/>
       {headerBack}
-      <div style={{ maxWidth:560, margin:"0 auto", padding:"32px 18px" }}>
-        <h2 style={{ fontSize:20, margin:"0 0 4px" }}>O que você vai avaliar?</h2>
-        <p style={{ color:C.muted, margin:"0 0 22px", fontSize:13 }}>
+      <div style={{ maxWidth:560, margin:"0 auto", padding:"32px 20px", boxSizing:"border-box" }}>
+        <h2 style={{ fontSize:22, margin:"0 0 4px" }}>O que você vai avaliar?</h2>
+        <p style={{ color:C.muted, margin:"0 0 22px", fontSize:14 }}>
           {ciclo.tempo} · Ganhe <strong style={{ color:C.gold }}>+{ciclo.tl} Talentos</strong>
         </p>
         <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
           {OBJETOS[cicloId].map(o=>(
             <div key={o.id} onClick={()=>selecionar(o)} style={{
-              background:C.card, borderRadius:14, padding:"16px 20px", cursor:"pointer",
+              background:C.card, borderRadius:16, padding:20, cursor:"pointer",
               border:`1px solid ${C.border}`, display:"flex", alignItems:"center", gap:14,
               transition:"all 0.15s",
             }}
@@ -1145,8 +1146,8 @@ function Avaliacao({ cicloId, perfil, userTL, token, usuario, missionarios, onVo
             >
               <span style={{ fontSize:26 }}>{o.icon}</span>
               <div style={{ flex:1 }}>
-                <div style={{ fontWeight:700, fontSize:15 }}>{o.nome}</div>
-                <div style={{ color:C.muted, fontSize:12, marginTop:2 }}>
+                <div style={{ fontWeight:700, fontSize:16 }}>{o.nome}</div>
+                <div style={{ color:C.muted, fontSize:14, marginTop:2 }}>
                   {getPerguntasCiclo(cicloId,o.id).length} perguntas · {ciclo.tempo}
                 </div>
               </div>
@@ -1160,19 +1161,19 @@ function Avaliacao({ cicloId, perfil, userTL, token, usuario, missionarios, onVo
 
   if (etapa==="fim") return (
     <div style={{
-      fontFamily:"'Georgia',serif", background:C.bg, minHeight:"100vh", color:C.text,
+      fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif", background:C.bg, minHeight:"100vh", color:C.text,
       display:"flex", alignItems:"center", justifyContent:"center",
       backgroundImage:`radial-gradient(ellipse at 50% 50%,${C.accent}08,transparent 70%)`,
     }}>
       {showToast && <Toast tl={ciclo.tl}/>}
-      <div style={{ textAlign:"center", padding:32, maxWidth:400 }}>
+      <div style={{ textAlign:"center", padding:"32px 20px", maxWidth:400, boxSizing:"border-box" }}>
         <div style={{ fontSize:72, marginBottom:16 }}>🎉</div>
-        <h2 style={{ fontSize:26, margin:"0 0 8px" }}>Avaliação enviada!</h2>
+        <h2 style={{ fontSize:24, margin:"0 0 8px" }}>Avaliação enviada!</h2>
         <p style={{ color:C.muted, marginBottom:20, lineHeight:1.6 }}>
           Sua voz sobre <strong style={{ color:C.text }}>{objeto?.nome}</strong> foi registrada. Obrigado por fortalecer a SEPAL!
         </p>
         {erroEnvio && (
-          <p style={{ color:C.danger, fontSize:12, marginTop:-12, marginBottom:20 }}>
+          <p style={{ color:C.danger, fontSize:14, marginTop:-12, marginBottom:20 }}>
             ⚠ {erroEnvio} (registrado apenas localmente nesta sessão)
           </p>
         )}
@@ -1181,12 +1182,12 @@ function Avaliacao({ cicloId, perfil, userTL, token, usuario, missionarios, onVo
           border:`1px solid ${C.gold}50`, borderRadius:16, padding:"16px 24px", marginBottom:24,
         }}>
           <div style={{ fontSize:32, fontWeight:900, color:C.gold }}>+{ciclo.tl} Talentos</div>
-          <div style={{ color:C.muted, fontSize:13 }}>adicionados ao seu perfil</div>
+          <div style={{ color:C.muted, fontSize:14 }}>adicionados ao seu perfil</div>
         </div>
         <button onClick={onVoltar} style={{
-          width:"100%", padding:"14px 0", borderRadius:14, cursor:"pointer",
+          width:"100%", minHeight:48, padding:"14px 0", borderRadius:12, cursor:"pointer",
           background:`linear-gradient(135deg,${C.accent},#EA580C)`,
-          color:"#fff", fontWeight:700, fontSize:16, border:"none", fontFamily:"inherit",
+          color:"#fff", fontWeight:600, fontSize:16, border:"none", fontFamily:"inherit", boxSizing:"border-box",
           boxShadow:`0 4px 20px ${C.accent}50`,
         }}>Voltar ao início</button>
       </div>
@@ -1194,14 +1195,14 @@ function Avaliacao({ cicloId, perfil, userTL, token, usuario, missionarios, onVo
   );
 
   return (
-    <div style={{ fontFamily:"'Georgia',serif", background:C.bg, minHeight:"100vh", color:C.text }}>
+    <div style={{ fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif", background:C.bg, minHeight:"100vh", color:C.text }}>
       {showToast && <Toast tl={ciclo.tl}/>}
       <AppHeader perfil={perfil} userTL={userTL} onHome={onVoltar}/>
-      <div style={{ background:C.surface, borderBottom:`1px solid ${C.border}`, padding:"15px 22px" }}>
+      <div style={{ background:C.surface, borderBottom:`1px solid ${C.border}`, padding:"15px 20px" }}>
         <div style={{ display:"flex", alignItems:"center", gap:14, marginBottom:10 }}>
           <button onClick={onVoltar} style={{ background:"none", border:"none", color:C.muted, cursor:"pointer", fontSize:22 }}>←</button>
           <span style={{ fontWeight:700 }}>{objeto?.icon} {objeto?.nome}</span>
-          <span style={{ marginLeft:"auto", color:C.muted, fontSize:13 }}>{pergAtual+1}/{perguntas.length}</span>
+          <span style={{ marginLeft:"auto", color:C.muted, fontSize:14 }}>{pergAtual+1}/{perguntas.length}</span>
         </div>
         <div style={{ height:5, background:C.border, borderRadius:10, overflow:"hidden" }}>
           <div style={{
@@ -1212,9 +1213,9 @@ function Avaliacao({ cicloId, perfil, userTL, token, usuario, missionarios, onVo
           }}/>
         </div>
       </div>
-      <div style={{ maxWidth:560, margin:"0 auto", padding:"36px 18px" }}>
-        <div style={{ background:C.card, borderRadius:20, padding:26, border:`1px solid ${C.border}` }}>
-          <p style={{ color:C.muted, fontSize:11, letterSpacing:2, textTransform:"uppercase", margin:"0 0 10px" }}>
+      <div style={{ maxWidth:560, margin:"0 auto", padding:"36px 20px", boxSizing:"border-box" }}>
+        <div style={{ background:C.card, borderRadius:16, padding:20, border:`1px solid ${C.border}` }}>
+          <p style={{ color:C.muted, fontSize:14, letterSpacing:2, textTransform:"uppercase", margin:"0 0 10px" }}>
             Pergunta {pergAtual+1} de {perguntas.length}
           </p>
           <h3 style={{ fontSize:18, fontWeight:600, lineHeight:1.55, margin:"0 0 26px" }}>{perg.texto}</h3>
@@ -1224,8 +1225,8 @@ function Avaliacao({ cicloId, perfil, userTL, token, usuario, missionarios, onVo
             <textarea value={respostas[perg.id]||""} onChange={e=>setRespostas(r=>({...r,[perg.id]:e.target.value}))}
               placeholder="Escreva sua resposta (opcional)..."
               style={{
-                width:"100%", minHeight:90, background:C.bg, color:C.text, fontSize:14, padding:14,
-                border:`1px solid ${C.border}`, borderRadius:10, resize:"vertical",
+                width:"100%", minHeight:96, background:C.bg, color:C.text, fontSize:16, padding:14,
+                border:`1px solid ${C.border}`, borderRadius:12, resize:"vertical",
                 fontFamily:"inherit", boxSizing:"border-box",
               }}/>
           )}
@@ -1233,8 +1234,8 @@ function Avaliacao({ cicloId, perfil, userTL, token, usuario, missionarios, onVo
         <div style={{ display:"flex", gap:12, marginTop:16 }}>
           {pergAtual>0
             ? <button onClick={()=>setPergAtual(p=>p-1)} style={{
-                flex:1, padding:"13px 0", borderRadius:12, background:C.card, color:C.text,
-                border:`1px solid ${C.border}`, cursor:"pointer", fontWeight:600, fontSize:14, fontFamily:"inherit",
+                flex:1, minHeight:48, padding:"13px 0", borderRadius:12, background:C.card, color:C.text,
+                border:`1px solid ${C.border}`, cursor:"pointer", fontWeight:600, fontSize:16, fontFamily:"inherit", boxSizing:"border-box",
               }}>← Anterior</button>
             : <div style={{ flex:1 }}/>
           }
@@ -1242,17 +1243,17 @@ function Avaliacao({ cicloId, perfil, userTL, token, usuario, missionarios, onVo
             disabled={enviando || !respondida(perg)}
             onClick={()=>pergAtual<perguntas.length-1?setPergAtual(p=>p+1):enviar()}
             style={{
-              flex:2, padding:"13px 0", borderRadius:12,
-              cursor:(enviando || !respondida(perg))?"default":"pointer", fontFamily:"inherit",
+              flex:2, minHeight:48, padding:"13px 0", borderRadius:12,
+              cursor:(enviando || !respondida(perg))?"default":"pointer", fontFamily:"inherit", boxSizing:"border-box",
               background:`linear-gradient(135deg,${C.accent},#EA580C)`,
-              color:"#fff", fontWeight:700, fontSize:14, border:"none",
+              color:"#fff", fontWeight:600, fontSize:16, border:"none",
               boxShadow:`0 4px 16px ${C.accent}40`, opacity:(enviando || !respondida(perg))?0.5:1,
             }}>
             {enviando ? "Enviando..." : pergAtual<perguntas.length-1?"Próxima →":`Enviar e ganhar +${ciclo.tl} TL ✓`}
           </button>
         </div>
         {!respondida(perg) && (
-          <p style={{ color:C.muted, fontSize:12, textAlign:"center", marginTop:10 }}>
+          <p style={{ color:C.muted, fontSize:14, textAlign:"center", marginTop:10 }}>
             Responda para continuar.
           </p>
         )}
@@ -1468,22 +1469,22 @@ function GestaoMissionarios({ perfil, userTL, onVoltar, missionarios, setMission
   const [novoLider, setNovoLider]       = useState("");
 
   return (
-    <div style={{ fontFamily:"'Georgia',serif", background:C.bg, minHeight:"100vh", color:C.text }}>
+    <div style={{ fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif", background:C.bg, minHeight:"100vh", color:C.text }}>
       <AppHeader perfil={perfil} userTL={userTL} onHome={onVoltar}/>
 
       {/* Sub-header */}
-      <div style={{ background:C.surface, borderBottom:`1px solid ${C.border}`, padding:"13px 24px", display:"flex", alignItems:"center", gap:10 }}>
+      <div style={{ background:C.surface, borderBottom:`1px solid ${C.border}`, padding:"13px 20px", display:"flex", alignItems:"center", gap:10 }}>
         <button onClick={onVoltar} style={{ background:"none", border:"none", color:C.muted, cursor:"pointer", fontSize:20 }}>←</button>
         <span style={{ fontWeight:700, fontSize:16 }}>👥 Gestão de Missionários</span>
-        <span style={{ color:C.muted, fontSize:13 }}>· {missionarios.length} cadastrados</span>
+        <span style={{ color:C.muted, fontSize:14 }}>· {missionarios.length} cadastrados</span>
       </div>
 
-      <div style={{ maxWidth:1000, margin:"0 auto", padding:"24px 18px" }}>
+      <div style={{ maxWidth:1000, margin:"0 auto", padding:"24px 20px", boxSizing:"border-box" }}>
 
         {erroEquipes && (
           <div style={{
             background:`${C.danger}18`, border:`1px solid ${C.danger}50`, borderRadius:12,
-            color:C.danger, fontSize:13, padding:"10px 16px", marginBottom:16,
+            color:C.danger, fontSize:14, padding:"10px 16px", marginBottom:16,
           }}>⚠ {erroEquipes}</div>
         )}
 
@@ -1496,12 +1497,12 @@ function GestaoMissionarios({ perfil, userTL, onVoltar, missionarios, setMission
           }}>
             <span style={{ fontSize:28 }}>🎂</span>
             <div style={{ flex:1 }}>
-              <div style={{ fontWeight:700, fontSize:15, color:C.gold }}>
+              <div style={{ fontWeight:700, fontSize:16, color:C.gold }}>
                 {aniversariantes.length===1
                   ? `Hoje é aniversário de ${aniversariantes[0].nome}!`
                   : `${aniversariantes.length} aniversariantes hoje!`}
               </div>
-              <div style={{ color:C.muted, fontSize:13 }}>Envie uma mensagem de celebração</div>
+              <div style={{ color:C.muted, fontSize:14 }}>Envie uma mensagem de celebração</div>
             </div>
             {aniversariantes.map(m=>(
               <div key={m.id} style={{ display:"flex", gap:6 }}>
@@ -1525,12 +1526,12 @@ function GestaoMissionarios({ perfil, userTL, onVoltar, missionarios, setMission
         {/* Filtros */}
         <div style={{ display:"flex", gap:10, marginBottom:20, flexWrap:"wrap" }}>
           <input value={busca} onChange={e=>setBusca(e.target.value)} placeholder="🔍 Buscar por nome ou e-mail..."
-            style={{ flex:2, minWidth:200, padding:"10px 14px", borderRadius:10, fontSize:14, background:C.card, border:`1px solid ${C.border}`, color:C.text, fontFamily:"inherit" }}/>
-          <select value={filtroEquipe} onChange={e=>setFiltroEquipe(e.target.value)} style={{ flex:1, minWidth:150, padding:"10px 14px", borderRadius:10, fontSize:14, background:C.card, border:`1px solid ${C.border}`, color:C.text, fontFamily:"inherit" }}>
+            style={{ flex:2, minWidth:200, height:48, padding:"0 14px", borderRadius:12, fontSize:16, background:C.card, border:`1px solid ${C.border}`, color:C.text, fontFamily:"inherit", boxSizing:"border-box" }}/>
+          <select value={filtroEquipe} onChange={e=>setFiltroEquipe(e.target.value)} style={{ flex:1, minWidth:150, height:48, padding:"0 14px", borderRadius:12, fontSize:16, background:C.card, border:`1px solid ${C.border}`, color:C.text, fontFamily:"inherit", boxSizing:"border-box" }}>
             <option value="">Todas as equipes</option>
             {equipes.map(e=><option key={e.id} value={e.id}>Equipe de {e.lider}</option>)}
           </select>
-          <select value={filtroStatus} onChange={e=>setFiltroStatus(e.target.value)} style={{ flex:1, minWidth:120, padding:"10px 14px", borderRadius:10, fontSize:14, background:C.card, border:`1px solid ${C.border}`, color:C.text, fontFamily:"inherit" }}>
+          <select value={filtroStatus} onChange={e=>setFiltroStatus(e.target.value)} style={{ flex:1, minWidth:120, height:48, padding:"0 14px", borderRadius:12, fontSize:16, background:C.card, border:`1px solid ${C.border}`, color:C.text, fontFamily:"inherit", boxSizing:"border-box" }}>
             <option value="">Todos</option>
             <option value="ativo">Ativos</option>
             <option value="inativo">Inativos</option>
@@ -1542,7 +1543,7 @@ function GestaoMissionarios({ perfil, userTL, onVoltar, missionarios, setMission
           {[["Total",missionarios.length,C.text],["Ativos",missionarios.filter(m=>m.status==="ativo").length,C.success],["Equipes",equipes.length,C.purple]].map(([label,val,cor])=>(
             <div key={label} style={{ background:C.card, borderRadius:12, padding:"12px 18px", border:`1px solid ${C.border}`, textAlign:"center", minWidth:80 }}>
               <div style={{ fontSize:22, fontWeight:900, color:cor }}>{val}</div>
-              <div style={{ color:C.muted, fontSize:12 }}>{label}</div>
+              <div style={{ color:C.muted, fontSize:14 }}>{label}</div>
             </div>
           ))}
         </div>
@@ -1552,7 +1553,7 @@ function GestaoMissionarios({ perfil, userTL, onVoltar, missionarios, setMission
           <div style={{
             display:"grid", gridTemplateColumns:"2fr 2fr 1.5fr 1fr 1fr auto",
             padding:"12px 18px", borderBottom:`1px solid ${C.border}`,
-            color:C.muted, fontSize:11, letterSpacing:1, textTransform:"uppercase",
+            color:C.muted, fontSize:14, letterSpacing:1, textTransform:"uppercase",
           }}>
             <span>Nome</span><span>Contato</span><span>Equipe</span><span>Nascimento</span><span>Status</span><span>Ações</span>
           </div>
@@ -1573,19 +1574,19 @@ function GestaoMissionarios({ perfil, userTL, onVoltar, missionarios, setMission
               >
                 <div>
                   <div style={{ fontWeight:700, fontSize:14 }}>{m.nome}</div>
-                  <div style={{ color:C.muted, fontSize:11, marginTop:2 }}>{m.tl} TL</div>
+                  <div style={{ color:C.muted, fontSize:14, marginTop:2 }}>{m.tl} TL</div>
                 </div>
                 <div>
-                  <div style={{ fontSize:13, color:C.muted }}>{m.email}</div>
-                  <div style={{ fontSize:12, color:C.muted }}>{m.whatsapp}</div>
+                  <div style={{ fontSize:14, color:C.muted }}>{m.email}</div>
+                  <div style={{ fontSize:14, color:C.muted }}>{m.whatsapp}</div>
                 </div>
-                <div style={{ fontSize:13 }}>{eq?`Eq. ${eq.lider.split(" ")[0]}`:"—"}</div>
-                <div style={{ fontSize:13, color:C.muted }}>{fmtData(m.nascimento)}</div>
+                <div style={{ fontSize:14 }}>{eq?`Eq. ${eq.lider.split(" ")[0]}`:"—"}</div>
+                <div style={{ fontSize:14, color:C.muted }}>{fmtData(m.nascimento)}</div>
                 <div><Badge color={m.status==="ativo"?C.success:C.muted}>{m.status==="ativo"?"Ativo":"Inativo"}</Badge></div>
                 <div style={{ display:"flex", gap:5 }}>
-                  <button title="Mensagem" onClick={()=>{setMsgCanal("whatsapp");setMsgTexto("");setModalMsg(m);}} style={{ background:C.success+"22", border:`1px solid ${C.success}44`, color:C.success, borderRadius:8, padding:"6px 9px", cursor:"pointer", fontSize:13 }}>💬</button>
-                  <button title="Editar" onClick={()=>abrirForm(m)} style={{ background:C.accent+"22", border:`1px solid ${C.accent}44`, color:C.accent, borderRadius:8, padding:"6px 9px", cursor:"pointer", fontSize:13 }}>✏️</button>
-                  {isGestor && <button title="Remover" onClick={()=>excluir(m.id)} style={{ background:C.danger+"22", border:`1px solid ${C.danger}44`, color:C.danger, borderRadius:8, padding:"6px 9px", cursor:"pointer", fontSize:13 }}>🗑</button>}
+                  <button title="Mensagem" onClick={()=>{setMsgCanal("whatsapp");setMsgTexto("");setModalMsg(m);}} style={{ background:C.success+"22", border:`1px solid ${C.success}44`, color:C.success, borderRadius:8, padding:"6px 9px", cursor:"pointer", fontSize:14 }}>💬</button>
+                  <button title="Editar" onClick={()=>abrirForm(m)} style={{ background:C.accent+"22", border:`1px solid ${C.accent}44`, color:C.accent, borderRadius:8, padding:"6px 9px", cursor:"pointer", fontSize:14 }}>✏️</button>
+                  {isGestor && <button title="Remover" onClick={()=>excluir(m.id)} style={{ background:C.danger+"22", border:`1px solid ${C.danger}44`, color:C.danger, borderRadius:8, padding:"6px 9px", cursor:"pointer", fontSize:14 }}>🗑</button>}
                 </div>
               </div>
             );
@@ -1596,7 +1597,7 @@ function GestaoMissionarios({ perfil, userTL, onVoltar, missionarios, setMission
       {/* MODAL: Form missionário */}
       {modalForm && (
         <Modal titulo={modalForm==="novo"?"Novo missionário":isGestor?`Editar — ${formData.nome}`:"Meu perfil"} onClose={()=>setModalForm(null)}>
-          {!isGestor && <p style={{ color:C.muted, fontSize:13, marginBottom:16 }}>Você pode editar apenas sua data de nascimento.</p>}
+          {!isGestor && <p style={{ color:C.muted, fontSize:14, marginBottom:16 }}>Você pode editar apenas sua data de nascimento.</p>}
           {isGestor && <>
             <FieldInput label="Nome completo *" value={formData.nome} onChange={e=>setF("nome",e.target.value)}/>
             <FieldInput label="E-mail *" type="email" value={formData.email} onChange={e=>setF("email",e.target.value)}/>
@@ -1607,7 +1608,7 @@ function GestaoMissionarios({ perfil, userTL, onVoltar, missionarios, setMission
               options={[{value:"ativo",label:"Ativo"},{value:"inativo",label:"Inativo"}]}/>
           </>}
           <FieldInput label="Data de nascimento" type="date" value={formData.nascimento} onChange={e=>setF("nascimento",e.target.value)}/>
-          {erroSalvar && <p style={{ color:C.danger, fontSize:13, margin:"0 0 8px" }}>⚠ {erroSalvar}</p>}
+          {erroSalvar && <p style={{ color:C.danger, fontSize:14, margin:"0 0 8px" }}>⚠ {erroSalvar}</p>}
           <div style={{ display:"flex", gap:10, justifyContent:"flex-end", marginTop:8 }}>
             <Btn outline color={C.muted} onClick={()=>setModalForm(null)}>Cancelar</Btn>
             <Btn onClick={()=>salvar(formData)} disabled={isGestor&&(!formData.nome||!formData.email||!formData.whatsapp||!formData.equipeId)}>Salvar</Btn>
@@ -1621,7 +1622,7 @@ function GestaoMissionarios({ perfil, userTL, onVoltar, missionarios, setMission
           <div style={{ display:"flex", gap:8, marginBottom:16 }}>
             {[["whatsapp","💬 WhatsApp",C.success],["email","📧 E-mail",C.accent]].map(([id,label,cor])=>(
               <button key={id} onClick={()=>setMsgCanal(id)} style={{
-                flex:1, padding:"10px 0", borderRadius:10, cursor:"pointer", fontWeight:700, fontSize:13,
+                flex:1, minHeight:48, padding:"10px 0", borderRadius:12, cursor:"pointer", fontWeight:600, fontSize:16, boxSizing:"border-box",
                 border:`2px solid ${msgCanal===id?cor:C.border}`,
                 background:msgCanal===id?cor+"22":C.card, color:msgCanal===id?cor:C.muted, fontFamily:"inherit",
               }}>{label}</button>
@@ -1629,10 +1630,10 @@ function GestaoMissionarios({ perfil, userTL, onVoltar, missionarios, setMission
           </div>
           {msgCanal==="email" && <FieldInput label="Assunto" value={msgAssunto} onChange={e=>setMsgAssunto(e.target.value)}/>}
           <div style={{ marginBottom:14 }}>
-            <label style={{ display:"block", color:C.muted, fontSize:12, marginBottom:5 }}>Mensagem</label>
+            <label style={{ display:"block", color:C.muted, fontSize:14, marginBottom:5 }}>Mensagem</label>
             <textarea value={msgTexto} onChange={e=>setMsgTexto(e.target.value)}
               placeholder={msgCanal==="whatsapp"?"Olá! Aqui é a equipe da SEPAL...":"Escreva sua mensagem..."}
-              style={{ width:"100%", minHeight:100, padding:12, borderRadius:10, fontSize:14, background:C.surface, border:`1px solid ${C.border}`, color:C.text, fontFamily:"inherit", resize:"vertical", boxSizing:"border-box" }}/>
+              style={{ width:"100%", minHeight:100, padding:14, borderRadius:12, fontSize:16, background:C.surface, border:`1px solid ${C.border}`, color:C.text, fontFamily:"inherit", resize:"vertical", boxSizing:"border-box" }}/>
           </div>
           <div style={{ display:"flex", gap:10, justifyContent:"flex-end" }}>
             <Btn outline color={C.muted} onClick={()=>setModalMsg(null)}>Cancelar</Btn>
@@ -1648,12 +1649,12 @@ function GestaoMissionarios({ perfil, userTL, onVoltar, missionarios, setMission
         <Modal titulo="📣 Alerta para todos os missionários" onClose={()=>setModalAlerta(false)}>
           {alertaIdx===null && <>
             {/* Stats */}
-            <div style={{ background:C.card, borderRadius:12, padding:14, marginBottom:16, border:`1px solid ${C.border}`, display:"flex", gap:16 }}>
-              <div><div style={{ fontSize:13, color:C.muted }}>Missionários ativos</div><div style={{ fontSize:22, fontWeight:800 }}>{ativos.length}</div></div>
+            <div style={{ background:C.card, borderRadius:16, padding:20, marginBottom:16, border:`1px solid ${C.border}`, display:"flex", gap:16 }}>
+              <div><div style={{ fontSize:14, color:C.muted }}>Missionários ativos</div><div style={{ fontSize:22, fontWeight:800 }}>{ativos.length}</div></div>
             </div>
 
             {/* Seleção de canal */}
-            <label style={{ display:"block", color:C.muted, fontSize:12, marginBottom:8 }}>Canal de envio</label>
+            <label style={{ display:"block", color:C.muted, fontSize:14, marginBottom:8 }}>Canal de envio</label>
             <div style={{ display:"flex", gap:8, marginBottom:16 }}>
               {[
                 ["wa_grupo",     "💬 Grupo WA",     C.success, "Padrão — 1 clique"],
@@ -1661,14 +1662,14 @@ function GestaoMissionarios({ perfil, userTL, onVoltar, missionarios, setMission
                 ["wa_individual","📱 WA Individual", C.purple,  "1 a 1 no WhatsApp"],
               ].map(([id,label,cor,sub])=>(
                 <button key={id} onClick={()=>setAlertaCanal(id)} style={{
-                  flex:1, padding:"10px 8px", borderRadius:10, cursor:"pointer", fontFamily:"inherit",
+                  flex:1, minHeight:48, padding:"10px 8px", borderRadius:12, cursor:"pointer", fontFamily:"inherit", boxSizing:"border-box",
                   border:`2px solid ${alertaCanal===id?cor:C.border}`,
                   background:alertaCanal===id?cor+"22":C.card,
                   color:alertaCanal===id?cor:C.muted,
                   textAlign:"center",
                 }}>
-                  <div style={{ fontWeight:700, fontSize:12 }}>{label}</div>
-                  <div style={{ fontSize:10, opacity:0.75, marginTop:2 }}>{sub}</div>
+                  <div style={{ fontWeight:700, fontSize:14 }}>{label}</div>
+                  <div style={{ fontSize:14, opacity:0.75, marginTop:2 }}>{sub}</div>
                 </button>
               ))}
             </div>
@@ -1690,18 +1691,18 @@ function GestaoMissionarios({ perfil, userTL, onVoltar, missionarios, setMission
 
             {/* Mensagem */}
             <div style={{ marginBottom:12 }}>
-              <label style={{ display:"block", color:C.muted, fontSize:12, marginBottom:5 }}>
+              <label style={{ display:"block", color:C.muted, fontSize:14, marginBottom:5 }}>
                 Mensagem {alertaCanal==="wa_grupo" && <span style={{ color:C.muted, fontWeight:400 }}>(será pré-preenchida no grupo)</span>}
               </label>
               <textarea value={alertaMsg} onChange={e=>setAlertaMsg(e.target.value)} placeholder="Escreva o alerta..."
-                style={{ width:"100%", minHeight:90, padding:12, borderRadius:10, fontSize:14, background:C.surface, border:`1px solid ${C.border}`, color:C.text, fontFamily:"inherit", resize:"vertical", boxSizing:"border-box" }}/>
+                style={{ width:"100%", minHeight:96, padding:14, borderRadius:12, fontSize:16, background:C.surface, border:`1px solid ${C.border}`, color:C.text, fontFamily:"inherit", resize:"vertical", boxSizing:"border-box" }}/>
             </div>
 
             {/* Nota de comportamento */}
             <div style={{ background:C.card, borderRadius:10, padding:"10px 14px", marginBottom:16, border:`1px solid ${C.border}` }}>
-              {alertaCanal==="wa_grupo"     && <span style={{ color:C.muted, fontSize:12 }}>💬 Abrirá o grupo do WhatsApp com a mensagem pré-preenchida. Você confirma o envio no WhatsApp.</span>}
-              {alertaCanal==="email"        && <span style={{ color:C.muted, fontSize:12 }}>📧 Abrirá seu cliente de e-mail individualmente para cada um dos {ativos.length} missionários ativos.</span>}
-              {alertaCanal==="wa_individual"&& <span style={{ color:C.muted, fontSize:12 }}>📱 Abrirá o WhatsApp individualmente para cada um dos {ativos.length} missionários. Você confirma cada envio.</span>}
+              {alertaCanal==="wa_grupo"     && <span style={{ color:C.muted, fontSize:14 }}>💬 Abrirá o grupo do WhatsApp com a mensagem pré-preenchida. Você confirma o envio no WhatsApp.</span>}
+              {alertaCanal==="email"        && <span style={{ color:C.muted, fontSize:14 }}>📧 Abrirá seu cliente de e-mail individualmente para cada um dos {ativos.length} missionários ativos.</span>}
+              {alertaCanal==="wa_individual"&& <span style={{ color:C.muted, fontSize:14 }}>📱 Abrirá o WhatsApp individualmente para cada um dos {ativos.length} missionários. Você confirma cada envio.</span>}
             </div>
 
             <div style={{ display:"flex", gap:10, justifyContent:"flex-end" }}>
@@ -1720,9 +1721,9 @@ function GestaoMissionarios({ perfil, userTL, onVoltar, missionarios, setMission
           {typeof alertaIdx==="number" && alertaIdx!=="fim" && (
             <div style={{ textAlign:"center" }}>
               <div style={{ fontSize:48, marginBottom:12 }}>{alertaCanal==="wa_individual"?"📱":"📧"}</div>
-              <div style={{ color:C.muted, fontSize:13, marginBottom:4 }}>{alertaIdx+1} de {ativos.length}</div>
+              <div style={{ color:C.muted, fontSize:14, marginBottom:4 }}>{alertaIdx+1} de {ativos.length}</div>
               <div style={{ fontWeight:700, fontSize:18, marginBottom:6 }}>{ativos[alertaIdx].nome}</div>
-              <div style={{ color:C.muted, fontSize:13, marginBottom:20 }}>
+              <div style={{ color:C.muted, fontSize:14, marginBottom:20 }}>
                 {alertaCanal==="wa_individual" ? ativos[alertaIdx].whatsapp : ativos[alertaIdx].email}
               </div>
               <div style={{ height:6, background:C.border, borderRadius:10, marginBottom:24, overflow:"hidden" }}>
@@ -1757,21 +1758,21 @@ function GestaoMissionarios({ perfil, userTL, onVoltar, missionarios, setMission
       {/* MODAL: Importar CSV */}
       {modalImport && (
         <Modal titulo="📥 Importar via Excel / CSV" onClose={()=>setModalImport(false)}>
-          <div style={{ background:C.card, borderRadius:12, padding:16, marginBottom:16, border:`1px dashed ${C.border}` }}>
-            <p style={{ color:C.muted, fontSize:13, margin:"0 0 8px" }}>Exporte sua planilha como <strong style={{ color:C.text }}>.CSV</strong> e selecione abaixo.</p>
-            <p style={{ color:C.muted, fontSize:12, margin:0 }}>Colunas: <code style={{ color:C.accent }}>nome, email, whatsapp, equipeId, nascimento, status</code></p>
+          <div style={{ background:C.card, borderRadius:16, padding:20, marginBottom:16, border:`1px dashed ${C.border}` }}>
+            <p style={{ color:C.muted, fontSize:14, margin:"0 0 8px" }}>Exporte sua planilha como <strong style={{ color:C.text }}>.CSV</strong> e selecione abaixo.</p>
+            <p style={{ color:C.muted, fontSize:14, margin:0 }}>Colunas: <code style={{ color:C.accent }}>nome, email, whatsapp, equipeId, nascimento, status</code></p>
           </div>
           <button onClick={()=>fileRef.current.click()} style={{
-            width:"100%", padding:"14px 0", borderRadius:12, cursor:"pointer",
+            width:"100%", minHeight:48, padding:"14px 0", borderRadius:12, cursor:"pointer",
             background:C.card, border:`1px solid ${C.border}`, color:C.text,
-            fontFamily:"inherit", fontWeight:600, fontSize:14, marginBottom:14,
+            fontFamily:"inherit", fontWeight:600, fontSize:16, marginBottom:14, boxSizing:"border-box",
           }}>📂 Selecionar arquivo CSV</button>
           <input ref={fileRef} type="file" accept=".csv" style={{ display:"none" }} onChange={handleArquivo}/>
-          {csvErro && <div style={{ color:C.danger, fontSize:13, marginBottom:12 }}>⚠️ {csvErro}</div>}
+          {csvErro && <div style={{ color:C.danger, fontSize:14, marginBottom:12 }}>⚠️ {csvErro}</div>}
           {csvPreview && <>
-            <div style={{ color:C.success, fontSize:13, marginBottom:10 }}>✅ {csvPreview.length} registros encontrados (prévia)</div>
+            <div style={{ color:C.success, fontSize:14, marginBottom:10 }}>✅ {csvPreview.length} registros encontrados (prévia)</div>
             <div style={{ overflow:"auto", marginBottom:16 }}>
-              <table style={{ width:"100%", borderCollapse:"collapse", fontSize:12 }}>
+              <table style={{ width:"100%", borderCollapse:"collapse", fontSize:14 }}>
                 <thead><tr>{["Nome","E-mail","Status"].map(h=>(
                   <th key={h} style={{ padding:"6px 10px", textAlign:"left", color:C.muted, borderBottom:`1px solid ${C.border}` }}>{h}</th>
                 ))}</tr></thead>
@@ -1795,20 +1796,20 @@ function GestaoMissionarios({ perfil, userTL, onVoltar, missionarios, setMission
       {/* MODAL: Equipes */}
       {modalEquipes && (
         <Modal titulo="👥 Gestão de Equipes" onClose={()=>setModalEquipes(false)}>
-          <p style={{ color:C.muted, fontSize:13, margin:"0 0 16px" }}>Equipes são identificadas pelo nome do(a) líder. Edite diretamente.</p>
+          <p style={{ color:C.muted, fontSize:14, margin:"0 0 16px" }}>Equipes são identificadas pelo nome do(a) líder. Edite diretamente.</p>
           <div style={{ marginBottom:16 }}>
             {listaEquipes.map(e=>(
               <div key={e.id} style={{ display:"flex", gap:8, alignItems:"center", marginBottom:8 }}>
                 <span style={{ fontSize:18 }}>👤</span>
                 <input value={e.lider} onChange={ev=>setListaEquipes(l=>l.map(x=>x.id===e.id?{...x,lider:ev.target.value}:x))}
-                  style={{ flex:1, padding:"9px 12px", borderRadius:9, fontSize:14, background:C.surface, border:`1px solid ${C.border}`, color:C.text, fontFamily:"inherit" }}/>
+                  style={{ flex:1, height:48, padding:"0 12px", borderRadius:12, fontSize:16, background:C.surface, border:`1px solid ${C.border}`, color:C.text, fontFamily:"inherit", boxSizing:"border-box" }}/>
                 <button onClick={()=>setListaEquipes(l=>l.filter(x=>x.id!==e.id))} style={{ background:"none", border:"none", color:C.danger, cursor:"pointer", fontSize:18 }}>×</button>
               </div>
             ))}
           </div>
           <div style={{ display:"flex", gap:8, marginBottom:20 }}>
             <input value={novoLider} onChange={e=>setNovoLider(e.target.value)} placeholder="Nome do(a) novo(a) líder..."
-              style={{ flex:1, padding:"9px 12px", borderRadius:9, fontSize:14, background:C.surface, border:`1px solid ${C.border}`, color:C.text, fontFamily:"inherit" }}/>
+              style={{ flex:1, height:48, padding:"0 12px", borderRadius:12, fontSize:16, background:C.surface, border:`1px solid ${C.border}`, color:C.text, fontFamily:"inherit", boxSizing:"border-box" }}/>
             <Btn onClick={()=>{ if(novoLider.trim()){setListaEquipes(l=>[...l,{id:"e"+Date.now(),lider:novoLider.trim()}]);setNovoLider("");}}} disabled={!novoLider.trim()}>+ Adicionar</Btn>
           </div>
           <div style={{ display:"flex", gap:10, justifyContent:"flex-end" }}>
