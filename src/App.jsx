@@ -178,11 +178,12 @@ function aniversariantesHoje(lista) {
 }
 
 // ── COMPONENTES COMPARTILHADOS ────────────────────────────────────────────────
-function Badge({ children, color }) {
+function Badge({ children, color, style }) {
   return (
     <span style={{
       background:color+"22", color, border:`1px solid ${color}44`,
       borderRadius:20, padding:"2px 10px", fontSize:14, fontWeight:700, letterSpacing:0.5,
+      ...style,
     }}>{children}</span>
   );
 }
@@ -276,19 +277,21 @@ function AppHeader({ perfil, userTL, onHome, onSair }) {
       <div style={{ display:"flex", alignItems:"center", gap:8, flexWrap:"wrap", rowGap:6 }}>
         <div style={{
           background:C.card, border:`1px solid ${C.border}`,
-          borderRadius:20, padding:"4px 10px",
+          borderRadius:20, height:30, padding:"0 12px", boxSizing:"border-box",
           display:"flex", alignItems:"center", gap:6, whiteSpace:"nowrap",
         }}>
-          <span>{nv.icon}</span>
-          <span style={{ fontSize:14, fontWeight:700, color:nv.cor }}>{userTL} TL</span>
+          <span style={{ fontSize:14, lineHeight:1 }}>{nv.icon}</span>
+          <span style={{ fontSize:14, fontWeight:700, letterSpacing:0.5, color:nv.cor, lineHeight:1 }}>{userTL} TL</span>
         </div>
-        <Badge color={perfil==="gestor"?C.accent:C.purple}>
+        <Badge color={perfil==="gestor"?C.accent:C.purple} style={{ height:30, padding:"0 12px", boxSizing:"border-box", display:"inline-flex", alignItems:"center", whiteSpace:"nowrap" }}>
           {perfil==="gestor"?"Gestor":"Missionário"}
         </Badge>
         {onSair && (
           <button onClick={onSair} title="Sair" style={{
             background:"none", border:`1px solid ${C.border}`, color:C.muted,
-            borderRadius:20, padding:"4px 10px", fontSize:14, cursor:"pointer", fontFamily:"inherit", whiteSpace:"nowrap",
+            borderRadius:20, height:30, padding:"0 12px", boxSizing:"border-box",
+            display:"inline-flex", alignItems:"center", justifyContent:"center",
+            fontSize:14, fontWeight:700, letterSpacing:0.5, cursor:"pointer", fontFamily:"inherit", whiteSpace:"nowrap",
           }}>Sair</button>
         )}
       </div>
