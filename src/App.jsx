@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
-import { api, salvarSessao, limparSessao, carregarSessao } from "./api";
+import { api, salvarSessao, limparSessao, carregarSessao, MODO_DEMO } from "./api";
+import { USUARIOS_DEMO, FINANCEIRO_DEMO } from "./apiDemo";
 
 // ── TOKENS ───────────────────────────────────────────────────────────────────
 const C = {
@@ -372,13 +373,13 @@ function Login({ onLogin }) {
   const [erro, setErro]           = useState("");
   const [carregando, setCarregando] = useState(false);
 
-  async function entrar(e) {
-    e.preventDefault();
+  async function entrar(e, emailDemo) {
+    e?.preventDefault();
     setErro("");
-    if (!email || !senha) { setErro("Informe email e senha."); return; }
+    if (!emailDemo && (!email || !senha)) { setErro("Informe email e senha."); return; }
     setCarregando(true);
     try {
-      const { usuario, token } = await api.login(email, senha);
+      const { usuario, token } = await api.login(emailDemo || email, senha);
       onLogin(usuario, token);
     } catch (err) {
       setErro(err.message || "Não foi possível entrar.");
@@ -399,7 +400,27 @@ function Login({ onLogin }) {
         </h1>
         <p style={{ color:C.text, marginBottom:4, fontSize:16, fontWeight:400 }}>Medindo Nosso Pulso Organizacional</p>
         <p style={{ color:C.text, fontSize:16, marginBottom:28, fontWeight:400 }}>Sua voz transforma a missão ✦</p>
-        <form onSubmit={entrar} style={{ display:"flex", flexDirection:"column", gap:12, textAlign:"left" }}>
+        {MODO_DEMO && (
+          <div style={{ background:C.card, border:`1px solid ${C.purple}60`, borderRadius:16, padding:20, marginBottom:24, textAlign:"left" }}>
+            <div style={{ color:C.text, fontWeight:700, fontSize:16, marginBottom:4 }}>Modo demonstração</div>
+            <p style={{ color:C.muted, fontSize:14, margin:"0 0 14px" }}>Dados fictícios. Nada do que for feito aqui é gravado no sistema real.</p>
+            <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+              {[
+                { u:USUARIOS_DEMO.gestor,      rotulo:"Entrar como Gestor",      sub:"Painel de KPIs, resultados e cadastro", cor:C.purple },
+                { u:USUARIOS_DEMO.missionario, rotulo:"Entrar como Missionário", sub:"Responder pulsos, Talentos e ranking",  cor:C.accent },
+              ].map(({ u, rotulo, sub, cor }) => (
+                <button key={u.papel} type="button" disabled={carregando} onClick={()=>entrar(null, u.email)} style={{
+                  minHeight:48, padding:"12px 16px", borderRadius:12, cursor:"pointer", textAlign:"left",
+                  background:`${cor}22`, border:`1px solid ${cor}80`, color:C.text, fontFamily:"inherit",
+                }}>
+                  <div style={{ fontSize:16, fontWeight:600 }}>{rotulo}</div>
+                  <div style={{ fontSize:14, color:C.muted }}>{u.nome} · {sub}</div>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+        <form onSubmit={entrar} style={{ display:"flex", flexDirection:"column", gap:12, textAlign:"left", ...(MODO_DEMO ? { display:"none" } : {}) }}>
           <FieldInput label="Email (@sepal.org.br)" value={email} onChange={e=>setEmail(e.target.value)} type="email" placeholder="voce@sepal.org.br"/>
           <FieldInput label="Senha" value={senha} onChange={e=>setSenha(e.target.value)} type="password" placeholder="••••••••"/>
           {erro && <p style={{ color:C.danger, fontSize:14, margin:0 }}>{erro}</p>}
@@ -833,9 +854,10 @@ function KPIsTab({ missionarios, dadosFinanceiros, kpisApi }) {
     reader.onload = ev => {
       try {
         const linhas = ev.target.result.trim().split("\n")
-          .map(l => l.split(",").map(c => c.trim().replace(/[^0-9.-]/g, "")));
+          .map(l => l.split(",").map(c => c.trim()));
+        const num = c => (c || "").replace(/[^0-9.-]/g, "");
         const dados = linhas.slice(1).map(([desc, orc, real]) => ({
-          desc, orcado: parseFloat(orc)||0, realizado: parseFloat(real)||0
+          desc, orcado: parseFloat(num(orc))||0, realizado: parseFloat(num(real))||0
         })).filter(d => d.orcado > 0);
         if (!dados.length) { setCsvErro("Nenhum dado válido encontrado."); return; }
         setFins(dados); setCsvErro(""); setCsvOk(true);
@@ -1826,7 +1848,23 @@ function GestaoMissionarios({ perfil, userTL, onVoltar, missionarios, setMission
 }
 
 // ── ROOT ─────────────────────────────────────────────────────────────────────
+// Selo fixo lembrando que a tela mostra dados fictícios (só no modo demonstração)
+function SeloDemo() {
+  return (
+    <div style={{
+      position:"fixed", left:12, bottom:12, zIndex:1000, pointerEvents:"none",
+      background:C.purple, color:"#fff", borderRadius:999, padding:"6px 12px",
+      fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif",
+      fontSize:12, fontWeight:700, letterSpacing:0.5, boxShadow:"0 4px 16px #0008",
+    }}>DEMONSTRAÇÃO · dados fictícios</div>
+  );
+}
+
 export default function App() {
+  return <>{MODO_DEMO && <SeloDemo/>}<Telas/></>;
+}
+
+function Telas() {
   const [tela, setTela]             = useState("login");
   const [perfil, setPerfil]         = useState(null);
   const [usuario, setUsuario]       = useState(null);
@@ -1834,7 +1872,7 @@ export default function App() {
   const [cicloAtivo, setCicloAtivo] = useState(null);
   const [userTL, setUserTL]         = useState(0);
   const [missionarios, setMissionarios] = useState(MISSIONARIOS_INIT);
-  const [dadosFinanceiros, setDadosFinanceiros] = useState([]);
+  const [dadosFinanceiros, setDadosFinanceiros] = useState(MODO_DEMO ? FINANCEIRO_DEMO : []);
   const [kpisApi, setKpisApi]       = useState(null);
   const [erroApi, setErroApi]       = useState("");
   // Histórico real do usuário logado, vindo da API — base para os Talentos exibidos e as Conquistas.
