@@ -60,6 +60,22 @@ const agregados = [
 ].map(([ciclo, area, media, n]) => ({ ciclo, area, soma: media * n, n }));
 let totalSubmissoes = 87;
 
+// Médias por pergunta usadas pelos KPIs 6 (RH, pergunta 3) e 8 (Operações, pergunta 2).
+// Os textos precisam ser iguais aos de PERGUNTAS_AREA em App.jsx.
+const agregadosPergunta = [
+  ["area", "Recursos Humanos", "Você participou ativamente de alguma equipe ou iniciativa neste trimestre?", 3.9, 40],
+  ["area", "Operações", "O planejamento anual (PLANU) é conhecido e seguido na prática?", 4.0, 38],
+].map(([ciclo, area, pergunta, media, n]) => ({ ciclo, area, pergunta, soma: media * n, n }));
+
+// Média geral do Pulso de Área por trimestre (tendência na aba Resultados); novos envios entram no trimestre atual
+const trimestreDe = (d) => ({ ano: d.getFullYear(), trimestre: Math.floor(d.getMonth() / 3) + 1 });
+const tAtual = trimestreDe(hoje);
+const tAnterior = tAtual.trimestre === 1 ? { ano: tAtual.ano - 1, trimestre: 4 } : { ano: tAtual.ano, trimestre: tAtual.trimestre - 1 };
+const porTrimestre = [
+  { ...tAnterior, soma: 3.7 * 250, n: 250, respondentes: 31 },
+  { ...tAtual, soma: 4.0 * 271, n: 271, respondentes: 34 },
+];
+
 const esperar = (ms = 120) => new Promise((r) => setTimeout(r, ms));
 const copia = (x) => JSON.parse(JSON.stringify(x));
 
@@ -106,6 +122,10 @@ export const apiDemo = {
       let ag = agregados.find((a) => a.ciclo === ciclo && a.area === area);
       if (!ag) { ag = { ciclo, area, soma: 0, n: 0 }; agregados.push(ag); }
       ag.soma += valor; ag.n += 1;
+      let agp = agregadosPergunta.find((a) => a.ciclo === ciclo && a.area === area && a.pergunta === r.texto);
+      if (!agp) { agp = { ciclo, area, pergunta: r.texto, soma: 0, n: 0 }; agregadosPergunta.push(agp); }
+      agp.soma += valor; agp.n += 1;
+      if (ciclo === "area") { const t = porTrimestre[porTrimestre.length - 1]; t.soma += valor; t.n += 1; }
     }
     totalSubmissoes += 1;
     let missionario = null;
@@ -133,6 +153,10 @@ export const apiDemo = {
         .filter((a) => a.n > 0)
         .sort((a, b) => a.ciclo.localeCompare(b.ciclo) || a.area.localeCompare(b.area))
         .map((a) => ({ ciclo: a.ciclo, area: a.area, media: (a.soma / a.n).toFixed(2), total_respostas: a.n })),
+      mediaPorPergunta: agregadosPergunta.filter((a) => a.n > 0)
+        .map((a) => ({ ciclo: a.ciclo, area: a.area, pergunta: a.pergunta, media: (a.soma / a.n).toFixed(2), total_respostas: a.n })),
+      mediaAreaPorTrimestre: porTrimestre.map((t) => ({ ano: t.ano, trimestre: t.trimestre, media: (t.soma / t.n).toFixed(2), total_respostas: t.n, respondentes: t.respondentes })),
+      respondentes: 34,
       rankingTalentos: [...missionarios].sort((a, b) => b.tl - a.tl).slice(0, 5).map((m, i) => ({
         id: m.id, nome: m.nome, tl: m.tl, talentos: m.tl, pos: i + 1, ciclos: ciclosDe(m), eu: m.email === usuario?.email,
       })),

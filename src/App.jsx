@@ -81,13 +81,24 @@ const PERGUNTAS_EVENTO = [
   { id:4, texto:"O que poderia ser melhorado na próxima edição?", tipo:"aberta" },
 ];
 
-const PERGUNTAS_LIDERANCA = [
-  { id:1, texto:"O Diretor Executivo comunica a visão com clareza?", tipo:"escala" },
-  { id:2, texto:"Você se sente ouvido e valorizado pela liderança?", tipo:"escala" },
-  { id:3, texto:"A liderança toma decisões com base em dados e discernimento?", tipo:"escala" },
-  { id:4, texto:"A liderança promove uma cultura saudável e de confiança?", tipo:"escala" },
-  { id:5, texto:"Compartilhe uma sugestão para fortalecer a liderança:", tipo:"aberta" },
-];
+// Mesmas quatro dimensões (direção, escuta, decisões/resposta, cultura) para todo líder,
+// com o enunciado adequado ao papel: Diretor Executivo (visão da organização) ou coordenação (condução da área).
+const PERGUNTAS_LIDERANCA = {
+  diretor: [
+    { id:1, texto:"O Diretor Executivo comunica a visão e as prioridades da SEPAL com clareza?", tipo:"escala" },
+    { id:2, texto:"Você se sente ouvido e valorizado pelo Diretor Executivo?", tipo:"escala" },
+    { id:3, texto:"O Diretor Executivo toma decisões com base em dados e discernimento?", tipo:"escala" },
+    { id:4, texto:"O Diretor Executivo promove uma cultura saudável e de confiança na organização?", tipo:"escala" },
+    { id:5, texto:"Compartilhe uma sugestão para fortalecer a atuação do Diretor Executivo:", tipo:"aberta" },
+  ],
+  coordenacao: [
+    { id:1, texto:"A coordenação comunica com clareza as diretrizes e prioridades da área?", tipo:"escala" },
+    { id:2, texto:"Você se sente ouvido e acompanhado pela coordenação?", tipo:"escala" },
+    { id:3, texto:"A coordenação responde às suas demandas em tempo adequado?", tipo:"escala" },
+    { id:4, texto:"A coordenação promove um ambiente de cuidado e confiança na equipe?", tipo:"escala" },
+    { id:5, texto:"Compartilhe uma sugestão para fortalecer esta coordenação:", tipo:"aberta" },
+  ],
+};
 
 const CONQUISTAS = [
   { id:"primeira_voz", icon:"🎙️", nome:"Primeira Voz",  desc:"Completou sua 1ª avaliação",     tlMin:0,   on:true  },
@@ -108,7 +119,6 @@ const RANKING = [
   { pos:7, nome:"Roberto Neves",  tl:180, ciclos:4, avatar:"👨‍🦳", tend:"↑" },
 ];
 
-const SCORES = { financeiro:4.2, cuidado:3.8, comunicacao:4.5, rh:3.2, ti:3.9, operacoes:4.0, estrategia:4.7 };
 
 const HISTORICO = [
   { ciclo:"Pulso de Área",      objeto:"Financeiro",          data:"Abr 2026", tl:50, icon:"🏛️" },
@@ -162,10 +172,54 @@ function calcularConquistas({ tl, ciclosCompletos, tiposFeitos, posicaoRanking, 
   return CONQUISTAS.map(c => ({ ...c, on: desbloqueada[c.id] ?? c.on }));
 }
 
+// Médias e KPIs calculados das respostas reais (endpoint /kpis). Sem respostas, o valor é null ("Sem dado").
+function calcularIndicadores(kpis) {
+  const num = v => (v === null || v === undefined || v === "" ? null : Number(v));
+  const linhasArea = kpis?.mediaPorArea || [];
+  const porPergunta = kpis?.mediaPorPergunta || [];
+
+  // Média ponderada pelo número de respostas
+  const media = linhas => {
+    const n = linhas.reduce((t, l) => t + num(l.total_respostas), 0);
+    return n ? linhas.reduce((t, l) => t + num(l.media) * num(l.total_respostas), 0) / n : null;
+  };
+  const doCiclo = ciclo => linhasArea.filter(l => l.ciclo === ciclo);
+  const daPergunta = (area, texto) => media(porPergunta.filter(l => l.ciclo === "area" && l.area === area && l.pergunta === texto));
+
+  // No banco, a "área" do Pulso de Área é gravada pelo nome (ex.: "Financeiro")
+  const scores = {}, respostasArea = {};
+  for (const a of AREAS) {
+    const linhas = doCiclo("area").filter(l => l.area === a.nome);
+    scores[a.id] = media(linhas);
+    respostasArea[a.id] = linhas.reduce((t, l) => t + num(l.total_respostas), 0);
+  }
+  const comDado = AREAS.filter(a => scores[a.id] !== null);
+  const mediaGeral = comDado.length ? comDado.reduce((t, a) => t + scores[a.id], 0) / comDado.length : null;
+
+  const trimestres = (kpis?.mediaAreaPorTrimestre || []).map(t => ({ ...t, media: num(t.media), rotulo: `T${t.trimestre} ${t.ano}` }));
+  const atual = trimestres[trimestres.length - 1] || null;
+  const anterior = trimestres[trimestres.length - 2] || null;
+
+  return {
+    scores, respostasArea, mediaGeral,
+    areasAvaliadas: comDado.length,
+    respondentes: num(kpis?.respondentes),
+    trimestreAtual: atual, trimestreAnterior: anterior,
+    variacao: atual && anterior ? atual.media - anterior.media : null,
+    kpi3: media(doCiclo("evento")),                                                   // Pulso de Evento (escala + Sim/Não)
+    kpi6: daPergunta("Recursos Humanos", PERGUNTAS_AREA.rh[2].texto),                 // RH-3
+    kpi7: media(doCiclo("lideranca").filter(l => l.area === "Diretor Executivo")),     // Pulso de Liderança — Diretor
+    kpi8: daPergunta("Operações", PERGUNTAS_AREA.operacoes[1].texto),                 // OPE-2
+  };
+}
+
+const classificar = v => v >= 4.5 ? ["Excelente", C.success] : v >= 4 ? ["Bom", C.accent] : v >= 3.5 ? ["Regular", C.warning] : ["Atenção", C.danger];
+const fmtNota = v => (v === null || v === undefined ? "—" : v.toFixed(1));
+
 function getPerguntasCiclo(cicloId, objetoId) {
   if (cicloId === "area")      return PERGUNTAS_AREA[objetoId] || [];
   if (cicloId === "evento")    return PERGUNTAS_EVENTO;
-  if (cicloId === "lideranca") return PERGUNTAS_LIDERANCA;
+  if (cicloId === "lideranca") return objetoId === "diretor" ? PERGUNTAS_LIDERANCA.diretor : PERGUNTAS_LIDERANCA.coordenacao;
   return [];
 }
 
@@ -445,7 +499,7 @@ function Dashboard({ perfil, userTL, ciclosCompletos, posicaoRanking, conquistas
   const isGestor = perfil === "gestor";
   const nv  = nivel(userTL);
   const prx = proxNivel(userTL);
-  const mediaScores = Object.values(SCORES).reduce((a,b)=>a+b,0)/AREAS.length;
+  const ind = calcularIndicadores(kpisApi);
 
   const TABS = [
     { id:"inicio",    label:"Início" },
@@ -581,18 +635,19 @@ function Dashboard({ perfil, userTL, ciclosCompletos, posicaoRanking, conquistas
 
           {isGestor && <>
             <h3 style={{ color:C.muted, fontSize:14, letterSpacing:2, textTransform:"uppercase", margin:"24px 0 12px" }}>
-              Resultados · Pulso de Área · T1 2026
+              Resultados · Pulso de Área · média acumulada
             </h3>
             <div style={{ background:C.card, borderRadius:16, padding:20, border:`1px solid ${C.border}`, marginBottom:12 }}>
-              {AREAS.map(a=>(
+              {ind.areasAvaliadas === 0 && <p style={{ color:C.muted, fontSize:14, margin:0 }}>Ainda não há respostas do Pulso de Área.</p>}
+              {ind.areasAvaliadas > 0 && AREAS.map(a=>(
                 <div key={a.id} style={{ marginBottom:14 }}>
                   <div style={{ display:"flex", justifyContent:"space-between", marginBottom:5 }}>
                     <span style={{ fontSize:14, fontWeight:600 }}>{a.icon} {a.nome}</span>
                     <span style={{ fontSize:14, fontWeight:700, color:a.cor }}>
-                      {SCORES[a.id].toFixed(1)}<span style={{ color:C.muted, fontWeight:400 }}>/5</span>
+                      {fmtNota(ind.scores[a.id])}<span style={{ color:C.muted, fontWeight:400 }}>/5</span>
                     </span>
                   </div>
-                  <Barra valor={SCORES[a.id]} max={5} cor={a.cor}/>
+                  <Barra valor={ind.scores[a.id] || 0} max={5} cor={a.cor}/>
                 </div>
               ))}
             </div>
@@ -606,7 +661,7 @@ function Dashboard({ perfil, userTL, ciclosCompletos, posicaoRanking, conquistas
 
         {tab==="perfil"     && <PerfilTab userTL={userTL} isGestor={isGestor} nv={nv} prx={prx} ciclosCompletos={ciclosCompletos} posicaoRanking={posicaoRanking} conquistas={conquistas}/>}
         {tab==="ranking"    && <RankingTab ranking={kpisApi?.rankingTalentos}/>}
-        {tab==="resultados" && isGestor && <ResultadosTab media={mediaScores}/>}
+        {tab==="resultados" && isGestor && <ResultadosTab ind={ind}/>}
         {tab==="kpis"       && isGestor && <KPIsTab missionarios={missionarios} dadosFinanceiros={dadosFinanceiros} kpisApi={kpisApi}/>}
       </div>
     </div>
@@ -763,7 +818,24 @@ function RankingTab({ ranking }) {
 }
 
 // ── TAB: RESULTADOS ──────────────────────────────────────────────────────────
-function ResultadosTab({ media }) {
+function ResultadosTab({ ind }) {
+  const avaliadas = AREAS.filter(a => ind.scores[a.id] !== null);
+  const fortes  = [...avaliadas].sort((a,b) => ind.scores[b.id] - ind.scores[a.id]).filter(a => ind.scores[a.id] >= 4).slice(0, 3);
+  const atencao = [...avaliadas].sort((a,b) => ind.scores[a.id] - ind.scores[b.id]).filter(a => ind.scores[a.id] < 4).slice(0, 3);
+  const { trimestreAtual:atual, trimestreAnterior:anterior, variacao } = ind;
+  const lista = (itens, vazio, marcarPrimeiro) => (
+    <ul style={{ margin:0, paddingLeft:18, color:C.muted, fontSize:14, lineHeight:1.9 }}>
+      {itens.length === 0 && <li>{vazio}</li>}
+      {itens.map((a,i) => <li key={a.id}>{a.nome} ({fmtNota(ind.scores[a.id])}){marcarPrimeiro && i===0 ? " — maior lacuna" : ""}</li>)}
+    </ul>
+  );
+
+  if (avaliadas.length === 0) return (
+    <div style={{ background:C.card, borderRadius:16, padding:20, border:`1px solid ${C.border}`, color:C.muted, fontSize:14 }}>
+      Ainda não há respostas do Pulso de Área. Os resultados aparecem aqui assim que os missionários começarem a responder.
+    </div>
+  );
+
   return (
     <div>
       <div style={{
@@ -775,18 +847,28 @@ function ResultadosTab({ media }) {
           width:78, height:78, borderRadius:"50%", fontSize:26, fontWeight:900, color:"#fff",
           background:`linear-gradient(135deg,${C.accent},${C.purple})`,
           display:"flex", alignItems:"center", justifyContent:"center",
-          boxShadow:`0 0 30px ${C.accent}50`,
-        }}>{media.toFixed(1)}</div>
+          boxShadow:`0 0 30px ${C.accent}50`, flexShrink:0,
+        }}>{fmtNota(ind.mediaGeral)}</div>
         <div>
           <div style={{ fontSize:18, fontWeight:700 }}>Saúde Organizacional</div>
-          <div style={{ color:C.muted, fontSize:14, marginTop:3 }}>Média das 7 áreas · 34 respondentes · T1 2026</div>
-          <div style={{ marginTop:8 }}><Badge color={C.success}>↑ +0.3 vs T4 2025</Badge></div>
+          <div style={{ color:C.muted, fontSize:14, marginTop:3 }}>
+            Média das {avaliadas.length === 7 ? "7 áreas" : `${avaliadas.length} áreas avaliadas`}
+            {ind.respondentes ? ` · ${ind.respondentes} respondentes` : ""}
+            {atual ? ` · último registro: ${atual.rotulo}` : ""}
+          </div>
+          {variacao !== null && (
+            <div style={{ marginTop:8 }}>
+              <Badge color={variacao >= 0 ? C.success : C.danger}>
+                {variacao >= 0 ? "↑ +" : "↓ "}{variacao.toFixed(1)} no {atual.rotulo} vs {anterior.rotulo}
+              </Badge>
+            </div>
+          )}
         </div>
       </div>
       <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(240px,1fr))", gap:10, marginBottom:14 }}>
         {AREAS.map(a=>{
-          const val = SCORES[a.id];
-          const [status,cor] = val>=4.5?["Excelente",C.success]:val>=4?["Bom",C.accent]:val>=3.5?["Regular",C.warning]:["Atenção",C.danger];
+          const val = ind.scores[a.id];
+          const [status,cor] = val === null ? ["Sem respostas", C.muted] : classificar(val);
           return (
             <div key={a.id} style={{ background:C.card, borderRadius:16, padding:16, border:`1px solid ${C.border}` }}>
               <div style={{ display:"flex", justifyContent:"space-between", marginBottom:8 }}>
@@ -794,25 +876,22 @@ function ResultadosTab({ media }) {
               </div>
               <div style={{ fontWeight:700, fontSize:14, marginBottom:4 }}>{a.nome}</div>
               <div style={{ fontSize:26, fontWeight:900, color:a.cor, margin:"4px 0" }}>
-                {val.toFixed(1)}<span style={{ fontSize:14, color:C.muted, fontWeight:400 }}>/5</span>
+                {fmtNota(val)}<span style={{ fontSize:14, color:C.muted, fontWeight:400 }}>/5</span>
               </div>
-              <Barra valor={val} max={5} cor={a.cor}/>
+              <Barra valor={val || 0} max={5} cor={a.cor}/>
+              {val !== null && <div style={{ color:C.muted, fontSize:14, marginTop:6 }}>{ind.respostasArea[a.id]} respostas</div>}
             </div>
           );
         })}
       </div>
-      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10 }}>
+      <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(240px,1fr))", gap:10 }}>
         <div style={{ background:C.card, borderRadius:16, padding:20, border:`1px solid ${C.success}30` }}>
           <div style={{ color:C.success, fontWeight:700, marginBottom:8 }}>✅ Pontos fortes</div>
-          <ul style={{ margin:0, paddingLeft:18, color:C.muted, fontSize:14, lineHeight:1.9 }}>
-            <li>Estratégia & Missão (4.7)</li><li>Comunicação (4.5)</li><li>Financeiro (4.2)</li>
-          </ul>
+          {lista(fortes, "Nenhuma área com média 4,0 ou mais", false)}
         </div>
         <div style={{ background:C.card, borderRadius:16, padding:20, border:`1px solid ${C.danger}30` }}>
           <div style={{ color:C.danger, fontWeight:700, marginBottom:8 }}>⚠️ Atenção imediata</div>
-          <ul style={{ margin:0, paddingLeft:18, color:C.muted, fontSize:14, lineHeight:1.9 }}>
-            <li>RH (3.2) — maior lacuna</li><li>Cuidado Missionário (3.8)</li>
-          </ul>
+          {lista(atencao, "Nenhuma área abaixo de 4,0", true)}
         </div>
       </div>
     </div>
@@ -835,13 +914,15 @@ function KPIsTab({ missionarios, dadosFinanceiros, kpisApi }) {
   // Novos nos últimos 30 dias (mock: tl===0 → recém cadastrado)
   const novos = missionarios.filter(m => m.tl === 0).length;
 
-  // ── Scores dos Pulsos (mock representativo — virá das avaliações reais)
+  // ── Scores dos Pulsos, calculados das respostas reais (null = ainda sem respostas)
+  const ind = calcularIndicadores(kpisApi);
   const pulsos = {
-    lideranca: 4.1,   // KPI 7 — Pulso de Liderança
-    rh_participacao: 3.9, // KPI 6 — Pulso Área RH q3
-    operacoes_planu: 4.0, // KPI 8 — Pulso Área Operações q2
-    evento_satisfacao: 4.3, // KPI 3 — Pulso de Evento
+    lideranca: ind.kpi7,          // KPI 7 — Pulso de Liderança (Diretor Executivo)
+    rh_participacao: ind.kpi6,    // KPI 6 — Pulso de Área RH, pergunta 3
+    operacoes_planu: ind.kpi8,    // KPI 8 — Pulso de Área Operações, pergunta 2
+    evento_satisfacao: ind.kpi3,  // KPI 3 — Pulso de Evento
   };
+  const nota = v => (v === null ? "—" : `${v.toFixed(1)}/5`);
 
   // ── Inputs manuais (KPIs 4 e 5)
   const [projAlinhados, setProjAlinhados] = useState(82); // %
@@ -894,7 +975,7 @@ function KPIsTab({ missionarios, dadosFinanceiros, kpisApi }) {
       itens: [
         { num:1, nome:"Taxa de retenção de missionários",     valor:`${retencao}%`,  meta:"≥ 90%",  status: kpiStatus(parseFloat(retencao), 90), fonte:"Cadastro de missionários" },
         { num:2, nome:"Novos missionários recrutados (30d)",  valor:novos,           meta:"≥ 2/trim",status: kpiStatus(novos, 2),                fonte:"Cadastro de missionários" },
-        { num:3, nome:"Satisfação com encontros estratégicos",valor:`${pulsos.evento_satisfacao}/5`, meta:"≥ 4.0", status: kpiStatus(pulsos.evento_satisfacao, 4.0), fonte:"Pulso de Evento" },
+        { num:3, nome:"Satisfação com encontros estratégicos",valor:nota(pulsos.evento_satisfacao), meta:"≥ 4.0", status: kpiStatus(pulsos.evento_satisfacao, 4.0), fonte:"Pulso de Evento" },
         { num:4, nome:"% projetos alinhados à missão",        valor:`${projAlinhados}%`, meta:"≥ 80%", status: kpiStatus(projAlinhados, 80), fonte:"Input manual", editavel:true, val:projAlinhados, set:setProjAlinhados },
         { num:5, nome:"Projetos ativos — povos não alcançados",valor:povosAlcancados, meta:"≥ 5",    status: kpiStatus(povosAlcancados, 5),    fonte:"Input manual", editavel:true, val:povosAlcancados, set:setPovosAlcancados },
       ]
@@ -903,9 +984,9 @@ function KPIsTab({ missionarios, dadosFinanceiros, kpisApi }) {
     {
       dim: "🌟 Capacidade Estratégica e Liderança (35%)",
       itens: [
-        { num:6, nome:"Participação dos missionários nas equipes", valor:`${pulsos.rh_participacao}/5`, meta:"≥ 4.0", status: kpiStatus(pulsos.rh_participacao, 4.0), fonte:"Pulso de Área — RH" },
-        { num:7, nome:"Avaliação do Diretor Executivo",            valor:`${pulsos.lideranca}/5`,       meta:"≥ 4.0", status: kpiStatus(pulsos.lideranca, 4.0),       fonte:"Pulso de Liderança" },
-        { num:8, nome:"Adesão ao PLANU",                           valor:`${pulsos.operacoes_planu}/5`, meta:"≥ 4.0", status: kpiStatus(pulsos.operacoes_planu, 4.0), fonte:"Pulso de Área — Operações" },
+        { num:6, nome:"Participação dos missionários nas equipes", valor:nota(pulsos.rh_participacao), meta:"≥ 4.0", status: kpiStatus(pulsos.rh_participacao, 4.0), fonte:"Pulso de Área — RH (pergunta 3)" },
+        { num:7, nome:"Avaliação do Diretor Executivo",            valor:nota(pulsos.lideranca),       meta:"≥ 4.0", status: kpiStatus(pulsos.lideranca, 4.0),       fonte:"Pulso de Liderança — Diretor Executivo" },
+        { num:8, nome:"Adesão ao PLANU",                           valor:nota(pulsos.operacoes_planu), meta:"≥ 4.0", status: kpiStatus(pulsos.operacoes_planu, 4.0), fonte:"Pulso de Área — Operações (pergunta 2)" },
       ]
     },
     // DIMENSÃO 3 — Eficiência Operacional
