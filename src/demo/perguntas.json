@@ -1,0 +1,169 @@
+{
+  "versao": 2,
+  "escalas": {
+    "escala": ["Discordo totalmente", "Discordo", "Nem concordo nem discordo", "Concordo", "Concordo totalmente"],
+    "binaria": ["Sim", "Não"],
+    "nps": "0 (nada provável) a 10 (extremamente provável)"
+  },
+  "talentos": {
+    "area":      { "primeira": 50, "adicional": 10 },
+    "lideranca": { "primeira": 70, "adicional": 10 },
+    "evento":    { "primeira": 30, "adicional": 30 }
+  },
+  "ancora": {
+    "codigo": "ANC-1", "tipo": "nps",
+    "texto": "De 0 a 10, quanto você recomendaria a SEPAL como um lugar para servir?"
+  },
+  "areas": [
+    { "id": "financeiro", "nome": "Financeiro", "sigla": "FIN",
+      "mede": "Coerência na aplicação dos recursos e transparência das decisões financeiras.",
+      "perguntas": [
+        { "codigo": "FIN-1", "tipo": "escala", "texto": "Os recursos da SEPAL são aplicados de forma coerente com a sua missão." },
+        { "codigo": "FIN-2", "tipo": "escala", "texto": "As decisões financeiras que me afetam são comunicadas com transparência." },
+        { "codigo": "FIN-3", "tipo": "aberta", "texto": "Que sugestão você tem para um uso mais eficiente dos recursos?" }
+      ] },
+    { "id": "cuidado", "nome": "Cuidado Missionário", "sigla": "CUI",
+      "mede": "Percepção de cuidado no campo e o efeito desse cuidado na permanência na missão.",
+      "perguntas": [
+        { "codigo": "CUI-1", "tipo": "escala", "texto": "Sinto-me cuidado pela SEPAL no meu campo de atuação." },
+        { "codigo": "CUI-2", "tipo": "binaria", "texto": "Quando enfrenta dificuldades, você sabe a quem recorrer dentro da SEPAL?" },
+        { "codigo": "CUI-3", "tipo": "escala", "texto": "O cuidado que recebo fortalece a minha permanência na missão." },
+        { "codigo": "CUI-4", "tipo": "aberta", "texto": "O que poderia melhorar no cuidado aos missionários?" }
+      ] },
+    { "id": "comunicacao", "nome": "Comunicação & Marketing", "sigla": "COM",
+      "mede": "Força da comunicação para mobilizar pessoas, representar a SEPAL e integrar as áreas.",
+      "perguntas": [
+        { "codigo": "COM-1", "tipo": "escala", "texto": "A comunicação da SEPAL me ajuda a mobilizar pessoas para a missão." },
+        { "codigo": "COM-2", "tipo": "escala", "texto": "Os canais de comunicação da SEPAL representam bem quem somos." },
+        { "codigo": "COM-3", "tipo": "escala", "texto": "A comunicação interna entre as áreas é clara e suficiente." },
+        { "codigo": "COM-4", "tipo": "aberta", "texto": "O que melhoraria a comunicação da SEPAL com os missionários?" }
+      ] },
+    { "id": "rh", "nome": "Recursos Humanos", "sigla": "RH",
+      "mede": "Valorização, desenvolvimento e participação dos missionários nas equipes.",
+      "perguntas": [
+        { "codigo": "RH-1", "tipo": "escala", "texto": "Sinto-me valorizado como parte da equipe da SEPAL." },
+        { "codigo": "RH-2", "tipo": "escala", "texto": "As oportunidades de desenvolvimento oferecidas são relevantes para o meu chamado." },
+        { "codigo": "RH-3", "tipo": "binaria", "texto": "Neste trimestre, você participou ativamente de alguma equipe ou iniciativa da SEPAL?" },
+        { "codigo": "RH-4", "tipo": "aberta", "texto": "O que motivaria você a se engajar ainda mais?" }
+      ] },
+    { "id": "ti", "nome": "Tecnologia", "sigla": "TI",
+      "mede": "Adequação das ferramentas e facilidade de acesso aos sistemas.",
+      "perguntas": [
+        { "codigo": "TI-1", "tipo": "escala", "texto": "As ferramentas tecnológicas disponíveis apoiam bem a minha atuação missionária." },
+        { "codigo": "TI-2", "tipo": "escala", "texto": "Consigo acessar os sistemas de que preciso sem dificuldade." },
+        { "codigo": "TI-3", "tipo": "binaria", "texto": "Você percebeu melhorias na tecnologia da SEPAL nos últimos meses?" },
+        { "codigo": "TI-4", "tipo": "aberta", "texto": "Qual ferramenta ou solução faria diferença no seu dia a dia?" }
+      ] },
+    { "id": "operacoes", "nome": "Operações", "sigla": "OPE",
+      "mede": "Processos e estruturas operacionais, suporte ao ministério e uso do planejamento anual (PLANU).",
+      "perguntas": [
+        { "codigo": "OPE-1", "tipo": "escala", "texto": "Os processos e as estruturas operacionais facilitam o meu trabalho." },
+        { "codigo": "OPE-2", "tipo": "binaria", "texto": "Neste trimestre, você usou o planejamento anual (PLANU) para orientar as suas atividades?" },
+        { "codigo": "OPE-3", "tipo": "escala", "texto": "Recebo das áreas operacionais o suporte de que o meu ministério precisa." },
+        { "codigo": "OPE-4", "tipo": "aberta", "texto": "Que processo operacional você mudaria primeiro? Por quê?" }
+      ] },
+    { "id": "estrategia", "nome": "Estratégia & Missão", "sigla": "EST",
+      "mede": "Alinhamento das iniciativas à missão e avanço no alcance a povos não alcançados.",
+      "perguntas": [
+        { "codigo": "EST-1", "tipo": "escala", "texto": "As iniciativas da SEPAL neste trimestre refletiram claramente a sua missão e visão." },
+        { "codigo": "EST-2", "tipo": "escala", "texto": "Percebo avanço concreto no alcance a povos não alcançados." },
+        { "codigo": "EST-3", "tipo": "binaria", "texto": "Os projetos em que você está envolvido estão alinhados à missão estatutária?" },
+        { "codigo": "EST-4", "tipo": "aberta", "texto": "Qual iniciativa estratégica você sente falta na SEPAL?" }
+      ] }
+  ],
+  "evento": {
+    "sigla": "EVE",
+    "mede": "Expectativa atendida, relevância do conteúdo e disposição de recomendar (NPS do evento).",
+    "perguntas": [
+      { "codigo": "EVE-1", "tipo": "escala", "texto": "O evento atendeu às minhas expectativas." },
+      { "codigo": "EVE-2", "tipo": "escala", "texto": "O conteúdo foi relevante para a minha vida missionária." },
+      { "codigo": "EVE-3", "tipo": "nps", "texto": "De 0 a 10, quanto você recomendaria este evento a outro missionário?" },
+      { "codigo": "EVE-4", "tipo": "aberta", "texto": "O que poderia ser melhorado na próxima edição?" }
+    ]
+  },
+  "lideranca": {
+    "diretor": {
+      "sigla": "LID-D",
+      "mede": "A liderança da organização como um todo.",
+      "perguntas": [
+        { "codigo": "LID-D-1", "tipo": "escala", "dimensao": "Direção",
+          "texto": "O Diretor Executivo comunica a visão da SEPAL com clareza.", "textoAuto": "Comunico a visão da SEPAL com clareza." },
+        { "codigo": "LID-D-2", "tipo": "escala", "dimensao": "Escuta",
+          "texto": "Sinto-me ouvido e valorizado pelo Diretor Executivo.", "textoAuto": "Os missionários se sentem ouvidos e valorizados por mim." },
+        { "codigo": "LID-D-3", "tipo": "escala", "dimensao": "Decisão e resposta",
+          "texto": "O Diretor Executivo toma decisões com base em dados e discernimento.", "textoAuto": "Tomo decisões com base em dados e discernimento." },
+        { "codigo": "LID-D-4", "tipo": "escala", "dimensao": "Cultura",
+          "texto": "O Diretor Executivo promove uma cultura saudável e de confiança na organização.", "textoAuto": "Promovo uma cultura saudável e de confiança na organização." },
+        { "codigo": "LID-D-5", "tipo": "aberta",
+          "texto": "Que sugestão você daria para fortalecer a atuação do Diretor Executivo?", "textoAuto": "Em que você gostaria de crescer como líder?" }
+      ]
+    },
+    "coordenacao": {
+      "sigla": "LID-C",
+      "mede": "A condução de cada área pela sua coordenação.",
+      "perguntas": [
+        { "codigo": "LID-C-1", "tipo": "escala", "dimensao": "Direção",
+          "texto": "A coordenação comunica com clareza as prioridades da área.", "textoAuto": "Comunico com clareza as prioridades da área." },
+        { "codigo": "LID-C-2", "tipo": "escala", "dimensao": "Escuta",
+          "texto": "Sinto-me ouvido e acompanhado pela coordenação.", "textoAuto": "Os missionários se sentem ouvidos e acompanhados por mim." },
+        { "codigo": "LID-C-3", "tipo": "escala", "dimensao": "Decisão e resposta",
+          "texto": "A coordenação responde às minhas demandas em tempo adequado.", "textoAuto": "Respondo às demandas dos missionários em tempo adequado." },
+        { "codigo": "LID-C-4", "tipo": "escala", "dimensao": "Cultura",
+          "texto": "A coordenação promove um ambiente de cuidado e confiança na equipe.", "textoAuto": "Promovo um ambiente de cuidado e confiança na equipe." },
+        { "codigo": "LID-C-5", "tipo": "aberta",
+          "texto": "Que sugestão você daria para fortalecer esta coordenação?", "textoAuto": "Em que você gostaria de crescer como líder?" }
+      ]
+    }
+  },
+  "legado": {
+    "observacao": "Textos das versões anteriores (até 02/10/2026), usados só para migrar respostas antigas para os códigos. Perguntas que mudaram de formato recebem o sufixo -v1 e não entram nos indicadores novos.",
+    "textos": {
+      "Você percebe que os recursos da SEPAL são aplicados de forma coerente com os propósitos da SEPAL?": "FIN-1",
+      "As decisões financeiras que te afetam são comunicadas com transparência?": "FIN-2",
+      "Sugestão para uso mais eficiente dos recursos:": "FIN-3",
+      "Você se sente cuidado e apoiado pela organização no seu campo de atuação?": "CUI-1",
+      "Quando enfrenta dificuldades, sabe a quem recorrer dentro da SEPAL?": "CUI-2",
+      "O cuidado que recebe fortalece sua permanência na missão?": "CUI-3",
+      "O que poderia melhorar no cuidado aos missionários?": "CUI-4",
+      "A comunicação da SEPAL inspira e mobiliza novas pessoas para a missão?": "COM-1",
+      "Os materiais e canais de comunicação representam bem quem somos?": "COM-2",
+      "A comunicação interna entre áreas é clara e suficiente?": "COM-3",
+      "O que melhoraria a comunicação da SEPAL com os missionários?": "COM-4",
+      "Você se sente valorizado como parte da equipe da SEPAL?": "RH-1",
+      "As oportunidades de desenvolvimento oferecidas são relevantes para seu chamado?": "RH-2",
+      "Você participou ativamente de alguma equipe ou iniciativa neste trimestre?": "RH-3",
+      "O que te motivaria a se engajar ainda mais?": "RH-4",
+      "As ferramentas tecnológicas disponíveis apoiam bem sua atuação missionária?": "TI-1",
+      "Você consegue acessar as informações e sistemas de que precisa sem dificuldade?": "TI-2",
+      "A tecnologia da SEPAL evoluiu de forma perceptível nos últimos meses?": "TI-3",
+      "Qual ferramenta ou solução faria diferença no seu dia a dia?": "TI-4",
+      "Os processos e estruturas operacionais facilitam ou dificultam seu trabalho?": "OPE-1",
+      "O planejamento anual (PLANU) é conhecido e seguido na prática?": "OPE-2-v1",
+      "As áreas operacionais da SEPAL correspondem às necessidades do seu ministério?": "OPE-3",
+      "Quais dessas áreas ou processos você mudaria primeiro?": "OPE-4",
+      "As iniciativas da SEPAL neste trimestre refletiram claramente a missão e visão da organização?": "EST-1",
+      "Você percebe avanço concreto no alcance a povos não alcançados?": "EST-2",
+      "Os projetos em que você está envolvido estão alinhados à missão estatutária?": "EST-3",
+      "Qual iniciativa estratégica você sente falta na SEPAL?": "EST-4",
+      "O evento atendeu às suas expectativas?": "EVE-1",
+      "O conteúdo foi relevante para sua vida missionária?": "EVE-2",
+      "Você recomendaria este evento para outro missionário?": "EVE-3-v1",
+      "O que poderia ser melhorado na próxima edição?": "EVE-4",
+      "O Diretor Executivo comunica a visão com clareza?": "LID-?-1",
+      "Você se sente ouvido e valorizado pela liderança?": "LID-?-2",
+      "A liderança toma decisões com base em dados e discernimento?": "LID-?-3",
+      "A liderança promove uma cultura saudável e de confiança?": "LID-?-4",
+      "Compartilhe uma sugestão para fortalecer a liderança:": "LID-?-5",
+      "O Diretor Executivo comunica a visão e as prioridades da SEPAL com clareza?": "LID-D-1",
+      "Você se sente ouvido e valorizado pelo Diretor Executivo?": "LID-D-2",
+      "O Diretor Executivo toma decisões com base em dados e discernimento?": "LID-D-3",
+      "O Diretor Executivo promove uma cultura saudável e de confiança na organização?": "LID-D-4",
+      "Compartilhe uma sugestão para fortalecer a atuação do Diretor Executivo:": "LID-D-5",
+      "A coordenação comunica com clareza as diretrizes e prioridades da área?": "LID-C-1",
+      "Você se sente ouvido e acompanhado pela coordenação?": "LID-C-2",
+      "A coordenação responde às suas demandas em tempo adequado?": "LID-C-3",
+      "A coordenação promove um ambiente de cuidado e confiança na equipe?": "LID-C-4",
+      "Compartilhe uma sugestão para fortalecer esta coordenação:": "LID-C-5"
+    }
+  }
+}
