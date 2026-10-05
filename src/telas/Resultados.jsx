@@ -9,7 +9,7 @@ export function textoDaPergunta(banco, codigo) {
     ...banco.areas.flatMap(a => a.perguntas), ...banco.evento.perguntas,
     ...banco.lideranca.diretor.perguntas, ...banco.lideranca.coordenacao.perguntas, banco.ancora,
   ];
-  return todas.find(p => p.codigo === codigo)?.texto || `${codigo} (versão anterior do questionário)`;
+  return todas.find(p => p.codigo === codigo)?.texto || `${codigo} (pergunta fora do questionário em uso)`;
 }
 
 export function SeletorCiclo({ kpis, cicloId, onTrocar }) {
